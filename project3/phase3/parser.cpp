@@ -156,9 +156,9 @@ static bool declarator(int kind = PLAIN_DECL)
 
 
     if (lookahead == '*') {
-	match('*');
-	hasparams = declarator(kind);
-	cout << "pointer to ";
+		match('*');
+		hasparams = declarator(kind);
+		cout << "pointer to ";
 
     } else {
 	if (lookahead == '(' && peek() != ')') {
@@ -172,10 +172,10 @@ static bool declarator(int kind = PLAIN_DECL)
 		cout << "declare " << name << " as ";
 
 	    if (kind == FUNCTION_DECL && lookahead == '(' && peek() != ')') {
-		match('(');
-		parameters();
-		hasparams = true;
-		match(')');
+			match('(');
+			parameters();
+			hasparams = true;
+			match(')');
 	    }
 	}
 
@@ -189,6 +189,7 @@ static bool declarator(int kind = PLAIN_DECL)
 			match('[');
 			match(NUM);
 			match(']');
+			cout << "array of ";
 
 	    } else
 		break;
