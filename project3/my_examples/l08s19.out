@@ -1,0 +1,7 @@
+declare test as declare x as int
+declare p as pointer to int
+declare f as function returning int
+declare q as pointer to function returning int
+declare a as char
+declare b as char
+4
