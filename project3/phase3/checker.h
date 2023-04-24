@@ -12,4 +12,10 @@ void closeScope() {
     cout << "close scope" << endl;
 }
 
+void defineFunction();
+
+void declareSymbol();
+
+void checkIdentifier();
+
 # endif
