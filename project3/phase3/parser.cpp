@@ -158,7 +158,7 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 
 	if (lookahead == '*') {
 				match('*');
-				Declarator pointer = Declarator(POINTER, 0U, nullptr);
+				Declarator pointer = Declarator(POINTER);
 				decls.push_back(pointer);
 				hasparams = declarator(decls, name, kind);
 				cout << "pointer to ";
@@ -172,6 +172,8 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 		} else if (kind != ABSTRACT_DECL) {
 				string name = lexbuf;
 				match(ID);
+				// Declarator function = Declarator(FUNCTION);
+				// decls.push_back(function);
 				cout << "declare " << name << " as ";
 
 			if (kind == FUNCTION_DECL && lookahead == '(' && peek() != ')') {
@@ -182,24 +184,28 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 						match(')');
 			}
 		}
-
 		while (1) {
 			if (lookahead == '(') {
 						match('(');
 						match(')');
 						cout << "function returning ";
+						Declarator function = Declarator(FUNCTION);
+						decls.push_back(function);
 
 			} else if (lookahead == '[') {
 						match('[');
 						match(NUM);
 						match(']');
 						cout << "array of ";
+						Declarator array = Declarator(ARRAY);
+						decls.push_back(array);
 
 			} else
 				break;
 		}
 	}
 
+	Type type = Type(specifier() , decls);
 	return hasparams;
 }
 

@@ -3,10 +3,8 @@
 #include <vector>
 #include <ostream>
 
-using namespace std;
-
 enum {ARRAY, FUNCTION, POINTER};
-typedef vector<class Type> Types;
+typedef std::vector<class Type> Types;
 
 class Declarator{
     int _kind;
@@ -20,20 +18,19 @@ class Declarator{
 
         bool operator==(const Declarator &that) const;
         bool operator!=(const Declarator &that) const;
-    
 };
 
-ostream & operator<<(std::ostream & ostr, const Declarator &decl);
-typedef vector<class Declarator> Declarators;
+std::ostream & operator<<(std::ostream & ostr, const Declarator &decl);
+typedef std::vector<class Declarator> Declarators;
 
-class Type{
+class Type {
     int _specifier;
     Declarators _decls;
     public:
         Type(int specifier): _specifier(specifier){}
         Type(int specifier, const Declarators &decls): _specifier(specifier), _decls(decls){}
-        int specifier(){return _specifier;}
-        const Declarators &declarators() const{return _decls;}
+        int specifier() const {return _specifier;}
+        const Declarators &declarators() const {return _decls;}
 
     bool operator==(const Type &that) const;
     bool operator!=(const Type &that) const;
@@ -44,5 +41,5 @@ class Type{
 
 
 };
-std::ostream & operator<<(std::ostream & ostr, const Type &decl);
+std::ostream & operator<<(std::ostream & ostr, const Type &type);
 #endif
