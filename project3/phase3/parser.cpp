@@ -11,6 +11,7 @@
 # include "tokens.h"
 # include "lexer.h"
 # include "checker.h"
+# include "type.h"
 
 using namespace std;
 
@@ -151,20 +152,21 @@ static int specifier()
  *				needed anyway.
  */
 
-static bool declarator(int kind = PLAIN_DECL)
+static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 {
 	bool hasparams = false;
 
-
 	if (lookahead == '*') {
 				match('*');
-				hasparams = declarator(kind);
+				Declarator pointer = Declarator(POINTER, 0U, nullptr);
+				decls.push_back(pointer);
+				hasparams = declarator(decls, name, kind);
 				cout << "pointer to ";
 
 	} else {
 		if (lookahead == '(' && peek() != ')') {
 			match('(');
-			hasparams = declarator(kind);
+			hasparams = declarator(decls, name, kind);
 			match(')');
 
 		} else if (kind != ABSTRACT_DECL) {
@@ -217,14 +219,18 @@ static bool declarator(int kind = PLAIN_DECL)
 
 static void declaration()
 {
+		string name;
+		Declarators decls;
+		
 		int typespec = specifier();
 		string type = (typespec == INT ? "int" : "char");
-	declarator();
+		
+		declarator(decls, name);
 		cout << type << endl;
 
 	while (lookahead == ',') {
 				match(',');
-				declarator();
+				declarator(decls, name);
 				cout << type << endl;
 	}
 
@@ -265,7 +271,11 @@ static void declarations()
 static void parameter()
 {
 	specifier();
-	declarator();
+
+	string name;
+	Declarators decls;
+
+	declarator(decls, name);
 }
 
 
@@ -430,7 +440,9 @@ static void prefixExpression()
 	} else if (lookahead == '(' && isSpecifier(peek())) {
 		match('(');
 		specifier();
-		declarator(ABSTRACT_DECL);
+		string name;
+		Declarators decls;
+		declarator(decls, name, ABSTRACT_DECL);
 		match(')');
 		prefixExpression();
 		cout << "cast" << endl;
@@ -765,8 +777,10 @@ static void statement()
 static void functionOrGlobal()
 {
 	specifier();
+	string name;
+	Declarators decls;
 
-	if (declarator(FUNCTION_DECL)) {
+	if (declarator(decls, name, FUNCTION_DECL)) {
 		match('{');
 		declarations();
 		statements();
@@ -776,7 +790,9 @@ static void functionOrGlobal()
 	} else {
 		while (lookahead == ',') {
 			match(',');
-			declarator();
+			string name;
+			Declarators decls;
+			declarator(decls, name);
 		}
 
 		match(';');
