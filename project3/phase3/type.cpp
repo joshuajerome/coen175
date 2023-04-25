@@ -1,4 +1,5 @@
 # include "type.h"
+# include "tokens.h"
 # include <cassert>
 # include <string>
 # include <ostream>
@@ -6,7 +7,7 @@
 using namespace std;
 
 Declarator::Declarator(int kind, unsigned length, Types *types):_kind(kind), _length(length), _parameters(types) {
-    assert(kind == POINTER || kind == FUNCTION || kind == ARRAY);
+    assert(kind == POINTER || kind == FUNCTION || kind == ARRAY || kind == -1);
 }
 unsigned Declarator::length() const{
     assert(_kind == ARRAY);
@@ -45,17 +46,17 @@ bool Declarator::operator==(const Declarator &that)const{
 
 bool Type::isFunction() const {
     assert(_decls.size() > 0);
-    return _decls[0].kind() == FUNCTION;
+    return _decls[_decls.size() - 1].kind() == FUNCTION;
 }
 
 bool Type::isArray() const {
     assert(_decls.size() > 0);
-    return _decls[0].kind() == ARRAY;
+    return _decls[_decls.size() - 1].kind() == ARRAY;
 }
 
 bool Type::isPointer() const {
     assert(_decls.size() > 0);
-    return _decls[0].kind() == POINTER;
+    return _decls[_decls.size() - 1].kind() == POINTER;
 }
 
 ostream & operator<<(std::ostream & ostr, const Declarator &decl) {
@@ -66,10 +67,23 @@ ostream & operator<<(std::ostream & ostr, const Declarator &decl) {
 ostream & operator<<(std::ostream & ostr, const Type &type) {
     ostr << "([";
     int len = type.declarators().size();
-    for (int i = 0; i < len - 1; i++) {
-        ostr << type.declarators()[i] << ", ";
+    for (int i = 0; i < len; i++) {
+        if (type.isArray()) {
+            ostr << "array";
+        } else if (type.isFunction()) {
+            ostr << "function";
+        } else if (type.isPointer()) {
+            ostr << "pointer";
+        } else {
+            ostr << "";
+        }
+
+        if (i == len - 1) {
+            ostr << "], ";
+        } else {
+            ostr << ", ";
+        }
     }
-    ostr << type.declarators()[len - 1] << "], ";
-    ostr << type.specifier() << ")" << endl;
+    ostr << (type.specifier() == INT? "int" : "char") << ")" << endl;
     return ostr;
 }

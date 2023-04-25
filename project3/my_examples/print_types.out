@@ -1,2 +1,33 @@
 open scope
-declare x as 
+declare x as ([], int)
+
+declare p as pointer to ([pointer, pointer], char)
+
+declare a as array of ([, ], char)
+
+declare q as pointer to pointer to ([pointer, pointer, pointer], int)
+
+declare b as array of pointer to ([pointer, pointer, pointer], char)
+
+declare c as pointer to array of ([pointer, pointer, pointer], char)
+
+declare d as array of pointer to pointer to ([pointer, pointer, pointer, pointer], int)
+
+declare e as pointer to array of pointer to ([pointer, pointer, pointer, pointer], int)
+
+declare f as function returning ([, ], int)
+
+declare g as function returning pointer to ([pointer, pointer, pointer], char)
+
+declare a as function returning array of ([, , ], char)
+
+declare b as array of function returning ([, , ], int)
+
+declare h as function returning pointer to pointer to ([pointer, pointer, pointer, pointer], int)
+
+declare p as pointer to function returning ([pointer, pointer, pointer], char)
+
+declare q as pointer to function returning pointer to ([pointer, pointer, pointer, pointer], int)
+
+close scope
+17

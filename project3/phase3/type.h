@@ -38,8 +38,6 @@ class Type {
     bool isFunction() const;
     bool isArray() const;
     bool isPointer() const;
-
-
 };
 std::ostream & operator<<(std::ostream & ostr, const Type &type);
 #endif

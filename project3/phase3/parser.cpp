@@ -158,8 +158,7 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 
 	if (lookahead == '*') {
 				match('*');
-				Declarator pointer = Declarator(POINTER);
-				decls.push_back(pointer);
+				decls.push_back(Declarator(POINTER));
 				hasparams = declarator(decls, name, kind);
 				cout << "pointer to ";
 
@@ -172,8 +171,6 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 		} else if (kind != ABSTRACT_DECL) {
 				string name = lexbuf;
 				match(ID);
-				// Declarator function = Declarator(FUNCTION);
-				// decls.push_back(function);
 				cout << "declare " << name << " as ";
 
 			if (kind == FUNCTION_DECL && lookahead == '(' && peek() != ')') {
@@ -182,6 +179,8 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 						parameters();
 						hasparams = true;
 						match(')');
+			} else {
+				decls.push_back(-1);
 			}
 		}
 		while (1) {
@@ -204,8 +203,6 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 				break;
 		}
 	}
-
-	Type type = Type(specifier() , decls);
 	return hasparams;
 }
 
@@ -225,19 +222,19 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 
 static void declaration()
 {
-		string name;
-		Declarators decls;
-		
-		int typespec = specifier();
-		string type = (typespec == INT ? "int" : "char");
-		
-		declarator(decls, name);
-		cout << type << endl;
+	string name;
+	Declarators decls;
+	
+	int typespec = specifier();
+	string type = (typespec == INT ? "int" : "char");
+	
+	declarator(decls, name);
+	cout << type << endl;
 
 	while (lookahead == ',') {
-				match(',');
-				declarator(decls, name);
-				cout << type << endl;
+		match(',');
+		declarator(decls, name);
+		cout << type << endl;
 	}
 
 	match(';');
@@ -449,6 +446,7 @@ static void prefixExpression()
 		string name;
 		Declarators decls;
 		declarator(decls, name, ABSTRACT_DECL);
+		//...
 		match(')');
 		prefixExpression();
 		cout << "cast" << endl;
@@ -782,7 +780,7 @@ static void statement()
 
 static void functionOrGlobal()
 {
-	specifier();
+	int typespec = specifier();
 	string name;
 	Declarators decls;
 
@@ -792,7 +790,6 @@ static void functionOrGlobal()
 		statements();
 		match('}');
 		closeScope();
-
 	} else {
 		while (lookahead == ',') {
 			match(',');
@@ -800,9 +797,11 @@ static void functionOrGlobal()
 			Declarators decls;
 			declarator(decls, name);
 		}
-
 		match(';');
+		Type type = Type(typespec, decls);
+		cout << type << endl;
 	}
+
 }
 
 
