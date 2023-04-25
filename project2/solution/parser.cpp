@@ -158,7 +158,6 @@ static bool declarator(int kind = PLAIN_DECL)
     if (lookahead == '*') {
 	match('*');
 	hasparams = declarator(kind);
-	cout << "pointer to ";
 
     } else {
 	if (lookahead == '(' && peek() != ')') {
@@ -169,7 +168,6 @@ static bool declarator(int kind = PLAIN_DECL)
 	} else if (kind != ABSTRACT_DECL) {
 		string name = lexbuf;
 	    match(ID);
-		cout << "declare " << name << " as ";
 
 	    if (kind == FUNCTION_DECL && lookahead == '(' && peek() != ')') {
 		match('(');
@@ -183,7 +181,6 @@ static bool declarator(int kind = PLAIN_DECL)
 	    if (lookahead == '(') {
 			match('(');
 			match(')');
-			cout << "function returning ";
 
 	    } else if (lookahead == '[') {
 			match('[');
@@ -217,12 +214,10 @@ static void declaration()
 	int typespec = specifier();
 	string type = (typespec == INT ? "int" : "char");
     declarator();
-	cout << type << endl;
 
     while (lookahead == ',') {
 		match(',');
 		declarator();
-		cout << type << endl;
     }
 
     match(';');
