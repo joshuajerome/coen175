@@ -1,0 +1,18 @@
+open scope
+declare x as int
+declare p as pointer to char
+declare a as array of 10 char
+declare q as pointer to pointer to int
+declare b as array of 10 pointer to char
+declare c as pointer to array of 10 char
+declare d as array of 10 pointer to pointer to int
+declare e as pointer to array of 10 pointer to int
+declare f as function returning int
+declare g as function returning pointer to char
+declare a as function returning array of 10 char
+declare b as array of 10 function returning int
+declare h as function returning pointer to pointer to int
+declare p as pointer to function returning char
+declare q as pointer to function returning pointer to int
+close scope
+17
