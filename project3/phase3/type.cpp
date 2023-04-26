@@ -77,7 +77,7 @@ ostream & operator<<(std::ostream & ostr, const Declarator &decl) {
 ostream & operator<<(std::ostream & ostr, const Type &type) {
     int len = type.declarators().size();
     for (int i = 0; i < len; i++) {
-        ostr << type.declarators()[len - i - 1];
+        ostr << type.declarators()[i];
     }
     ostr << (type.specifier() == INT? "int" : "char");
     return ostr;

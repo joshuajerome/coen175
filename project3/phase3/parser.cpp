@@ -165,6 +165,7 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 		if (lookahead == '(' && peek() != ')') {
 			match('(');
 			hasparams = declarator(decls, name, kind);
+
 			match(')');
 
 		} else if (kind != ABSTRACT_DECL) {
@@ -799,7 +800,9 @@ static void functionOrGlobal()
 		cout << type << endl;
 		while (lookahead == ',') {
 			match(',');
+			decls.clear();
 			declarator(decls, name);
+			type = Type(typespec, decls);
 			cout << type << endl;
 		}
 		match(';');
