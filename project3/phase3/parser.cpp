@@ -158,18 +158,17 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 
 	if (lookahead == '*') {
 				match('*');
-				decls.push_back(Declarator(POINTER));
 				hasparams = declarator(decls, name, kind);
+				decls.push_back(Declarator(POINTER));
 
 	} else {
 		if (lookahead == '(' && peek() != ')') {
 			match('(');
 			hasparams = declarator(decls, name, kind);
-
 			match(')');
 
 		} else if (kind != ABSTRACT_DECL) {
-				name = lexbuf;
+				string name = lexbuf;
 				match(ID);
 				cout << "declare " << name << " as ";
 
@@ -178,8 +177,8 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 						openScope();
 						hasparams = true;
 						match(')');
-						Declarator function = Declarator(FUNCTION,0,parameters());
-						decls.push_back(function);
+						// Declarator function = Declarator(FUNCTION,0,parameters());
+						// decls.push_back(function);
 			}
 		}
 		while (1) {
