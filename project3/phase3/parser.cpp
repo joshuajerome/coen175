@@ -19,7 +19,7 @@ static int lookahead, nexttoken;
 static string lexbuf, nextbuf;
 
 static void expression();
-static void parameters();
+static Types* parameters();
 static void statement();
 
 enum { PLAIN_DECL, FUNCTION_DECL, ABSTRACT_DECL };
@@ -160,7 +160,6 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 				match('*');
 				decls.push_back(Declarator(POINTER));
 				hasparams = declarator(decls, name, kind);
-				cout << "pointer to ";
 
 	} else {
 		if (lookahead == '(' && peek() != ')') {
@@ -169,33 +168,35 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 			match(')');
 
 		} else if (kind != ABSTRACT_DECL) {
-				string name = lexbuf;
+				name = lexbuf;
 				match(ID);
-				cout << "declare " << name << " as ";
 
 			if (kind == FUNCTION_DECL && lookahead == '(' && peek() != ')') {
 						match('(');
 						openScope();
-						parameters();
+						Types* params = parameters();
 						hasparams = true;
 						match(')');
-			} else {
-				decls.push_back(-1);
+
+						cout << (*params).size() << endl;
+						// for (Type t : *params) {
+
+						// 	declareSymbol(name, t);
+						// }
 			}
 		}
 		while (1) {
 			if (lookahead == '(') {
 						match('(');
 						match(')');
-						cout << "function returning ";
 						Declarator function = Declarator(FUNCTION);
 						decls.push_back(function);
 
 			} else if (lookahead == '[') {
 						match('[');
+						int len = stoi(lexbuf);
 						match(NUM);
 						match(']');
-						cout << "array of ";
 						Declarator array = Declarator(ARRAY);
 						decls.push_back(array);
 
@@ -222,19 +223,15 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 
 static void declaration()
 {
+	specifier();
 	string name;
 	Declarators decls;
-	
-	int typespec = specifier();
-	string type = (typespec == INT ? "int" : "char");
-	
+
 	declarator(decls, name);
-	cout << type << endl;
 
 	while (lookahead == ',') {
 		match(',');
 		declarator(decls, name);
-		cout << type << endl;
 	}
 
 	match(';');
@@ -271,14 +268,24 @@ static void declarations()
  *				  specifier declarator
  */
 
-static void parameter()
+static void parameter(Types* types)
 {
-	specifier();
+	int typespec = specifier();
 
 	string name;
 	Declarators decls;
 
 	declarator(decls, name);
+
+	if (decls[0] == ARRAY) {
+		decls.pop_back();
+		decls.push_back(Declarator(POINTER));
+	} else if (decls[0] == FUNCTION) {
+		decls.push_back(Declarator(POINTER));
+	}
+
+	Type type = Type(typespec, decls);
+	types->push_back(type);
 }
 
 
@@ -297,19 +304,21 @@ static void parameter()
  *				  parameter , parameter-list
  */
 
-static void parameters()
+static Types* parameters()
 {
+	Types* _parameters;
 	if (lookahead == VOID)
 		match(VOID);
 
 	else {
-		parameter();
+		parameter(_parameters);
 
 		while (lookahead == ',') {
 			match(',');
-			parameter();
+			parameter(_parameters);
 		}
 	}
+	return _parameters;
 }
 
 
@@ -792,10 +801,11 @@ static void functionOrGlobal()
 		closeScope();
 	} else {
 		while (lookahead == ',') {
-			match(',');
 			string name;
 			Declarators decls;
+			match(',');
 			declarator(decls, name);
+			Type type = Type(typespec, decls);
 		}
 		match(';');
 		Type type = Type(typespec, decls);

@@ -7,7 +7,7 @@
 using namespace std;
 
 Declarator::Declarator(int kind, unsigned length, Types *types):_kind(kind), _length(length), _parameters(types) {
-    assert(kind == POINTER || kind == FUNCTION || kind == ARRAY || kind == -1);
+    assert(kind == POINTER || kind == FUNCTION || kind == ARRAY);
 }
 unsigned Declarator::length() const{
     assert(_kind == ARRAY);
@@ -46,44 +46,39 @@ bool Declarator::operator==(const Declarator &that)const{
 
 bool Type::isFunction() const {
     assert(_decls.size() > 0);
-    return _decls[_decls.size() - 1].kind() == FUNCTION;
+    return _decls[0].kind() == FUNCTION;
 }
 
 bool Type::isArray() const {
     assert(_decls.size() > 0);
-    return _decls[_decls.size() - 1].kind() == ARRAY;
+    return _decls[0].kind() == ARRAY;
 }
 
 bool Type::isPointer() const {
     assert(_decls.size() > 0);
-    return _decls[_decls.size() - 1].kind() == POINTER;
+    return _decls[0].kind() == POINTER;
 }
 
 ostream & operator<<(std::ostream & ostr, const Declarator &decl) {
-    ostr << decl.kind();
+    switch (decl.kind()) {
+        case ARRAY:
+            ostr << "array of ";
+            break;
+        case FUNCTION:
+            ostr << "function returning ";
+            break;
+        case POINTER:
+            ostr << "pointer to ";
+            break;
+    }
     return ostr;
 }
 
 ostream & operator<<(std::ostream & ostr, const Type &type) {
-    ostr << "([";
     int len = type.declarators().size();
     for (int i = 0; i < len; i++) {
-        if (type.isArray()) {
-            ostr << "array";
-        } else if (type.isFunction()) {
-            ostr << "function";
-        } else if (type.isPointer()) {
-            ostr << "pointer";
-        } else {
-            ostr << "";
-        }
-
-        if (i == len - 1) {
-            ostr << "], ";
-        } else {
-            ostr << ", ";
-        }
+        ostr << type.declarators()[i];
     }
-    ostr << (type.specifier() == INT? "int" : "char") << ")" << endl;
+    ostr << (type.specifier() == INT? "int" : "char");
     return ostr;
 }

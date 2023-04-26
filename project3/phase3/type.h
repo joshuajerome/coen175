@@ -14,7 +14,7 @@ class Declarator{
         Declarator(int kind, unsigned length = 0, Types *_parameters = nullptr);
         int kind() const {return _kind;}
         unsigned length() const;
-        Types *parameters() const;
+        Types* parameters() const;
 
         bool operator==(const Declarator &that) const;
         bool operator!=(const Declarator &that) const;
