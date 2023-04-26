@@ -62,7 +62,7 @@ bool Type::isPointer() const {
 ostream & operator<<(std::ostream & ostr, const Declarator &decl) {
     switch (decl.kind()) {
         case ARRAY:
-            ostr << "array of ";
+            ostr << "array of " << decl.length() << " ";
             break;
         case FUNCTION:
             ostr << "function returning ";
@@ -77,7 +77,7 @@ ostream & operator<<(std::ostream & ostr, const Declarator &decl) {
 ostream & operator<<(std::ostream & ostr, const Type &type) {
     int len = type.declarators().size();
     for (int i = 0; i < len; i++) {
-        ostr << type.declarators()[i];
+        ostr << type.declarators()[len - i - 1];
     }
     ostr << (type.specifier() == INT? "int" : "char");
     return ostr;

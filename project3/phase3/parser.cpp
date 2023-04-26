@@ -170,19 +170,15 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 		} else if (kind != ABSTRACT_DECL) {
 				name = lexbuf;
 				match(ID);
+				cout << "declare " << name << " as ";
 
 			if (kind == FUNCTION_DECL && lookahead == '(' && peek() != ')') {
 						match('(');
 						openScope();
-						Types* params = parameters();
 						hasparams = true;
 						match(')');
-
-						cout << (*params).size() << endl;
-						// for (Type t : *params) {
-
-						// 	declareSymbol(name, t);
-						// }
+						Declarator function = Declarator(FUNCTION,0,parameters());
+						decls.push_back(function);
 			}
 		}
 		while (1) {
@@ -197,7 +193,7 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 						int len = stoi(lexbuf);
 						match(NUM);
 						match(']');
-						Declarator array = Declarator(ARRAY);
+						Declarator array = Declarator(ARRAY, len);
 						decls.push_back(array);
 
 			} else
@@ -223,15 +219,16 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 
 static void declaration()
 {
-	specifier();
 	string name;
 	Declarators decls;
-
+	Type type = Type(specifier(), decls);
 	declarator(decls, name);
+	cout << type << endl;
 
 	while (lookahead == ',') {
 		match(',');
 		declarator(decls, name);
+		cout << type << endl;
 	}
 
 	match(';');
@@ -280,7 +277,7 @@ static void parameter(Types* types)
 	if (decls[0] == ARRAY) {
 		decls.pop_back();
 		decls.push_back(Declarator(POINTER));
-	} else if (decls[0] == FUNCTION) {
+	} else if (decls[decls.size() - 1] == FUNCTION) {
 		decls.push_back(Declarator(POINTER));
 	}
 
@@ -307,12 +304,10 @@ static void parameter(Types* types)
 static Types* parameters()
 {
 	Types* _parameters;
-	if (lookahead == VOID)
+	if (lookahead == VOID) {
 		match(VOID);
-
-	else {
+	} else {
 		parameter(_parameters);
-
 		while (lookahead == ',') {
 			match(',');
 			parameter(_parameters);
@@ -800,16 +795,14 @@ static void functionOrGlobal()
 		match('}');
 		closeScope();
 	} else {
-		while (lookahead == ',') {
-			string name;
-			Declarators decls;
-			match(',');
-			declarator(decls, name);
-			Type type = Type(typespec, decls);
-		}
-		match(';');
 		Type type = Type(typespec, decls);
 		cout << type << endl;
+		while (lookahead == ',') {
+			match(',');
+			declarator(decls, name);
+			cout << type << endl;
+		}
+		match(';');
 	}
 
 }

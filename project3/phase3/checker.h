@@ -21,6 +21,8 @@ void declareSymbol(const string &name, const Type &type) {
     cout << "declare " << name << " as " << type << endl;
 }
 
-void checkIdentifier(const string &name);
+void checkIdentifier(const string &name) {
+    cout << "declare " << name << " as ";
+}
 
 # endif
