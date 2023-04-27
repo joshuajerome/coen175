@@ -35,7 +35,7 @@ echo "Extracting examples ..."
 tar -C $WORKDIR -xf $2 || die
 
 echo "Running examples ..."
-exec 3> CHECKSUB.diff
+exec 3> MYCHECKSUB.diff
 
 (cd $WORKDIR/my_examples && for FILE in *.c; do
     echo -n "$FILE ... "
