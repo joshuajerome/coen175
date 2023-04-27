@@ -20,6 +20,22 @@ class Declarator{
         bool operator!=(const Declarator &that) const;
 };
 
+/*
+
+    struct Pointer:public Declarator {
+        Pointer(): Declarator(POINTER){}
+    }
+
+    struct Array: public Declarator {
+        Array(unisgned length): Declarator(ARRAY, length) {}
+    }
+
+    struct Function: public Declarator {
+        Function(Types* parameters): Declarator(FUNCTION, 0, parameters) {}
+    }
+
+*/
+
 std::ostream & operator<<(std::ostream & ostr, const Declarator &decl);
 typedef std::vector<class Declarator> Declarators;
 

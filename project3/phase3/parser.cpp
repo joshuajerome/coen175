@@ -160,7 +160,6 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 				match('*');
 				hasparams = declarator(decls, name, kind);
 				decls.push_back(Declarator(POINTER));
-
 	} else {
 		if (lookahead == '(' && peek() != ')') {
 			match('(');
@@ -168,17 +167,16 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 			match(')');
 
 		} else if (kind != ABSTRACT_DECL) {
-				string name = lexbuf;
+				name = lexbuf;
 				match(ID);
-				cout << "declare " << name << " as ";
 
 			if (kind == FUNCTION_DECL && lookahead == '(' && peek() != ')') {
 						match('(');
 						openScope();
+						Declarator function = Declarator(FUNCTION,0,parameters());
 						hasparams = true;
 						match(')');
-						// Declarator function = Declarator(FUNCTION,0,parameters());
-						// decls.push_back(function);
+						decls.push_back(function);
 			}
 		}
 		while (1) {
@@ -221,16 +219,18 @@ static void declaration()
 {
 	string name;
 	Declarators decls;
-	Type type = Type(specifier(), decls);
+	int typespec = specifier();
 	declarator(decls, name);
-	cout << type << endl;
+	Type type = Type(typespec, decls);
+	declareSymbol(name, type);
 
 	while (lookahead == ',') {
 		match(',');
+		decls.clear();
 		declarator(decls, name);
-		cout << type << endl;
+		type = Type(typespec, decls);
+		declareSymbol(name, type);
 	}
-
 	match(';');
 }
 
@@ -274,15 +274,19 @@ static void parameter(Types* types)
 
 	declarator(decls, name);
 
-	if (decls[0] == ARRAY) {
-		decls.pop_back();
-		decls.push_back(Declarator(POINTER));
-	} else if (decls[decls.size() - 1] == FUNCTION) {
-		decls.push_back(Declarator(POINTER));
+	if (decls[0].kind() == ARRAY) {
+		decls[0] = Declarator(POINTER);
+	} else if (decls[0].kind() == FUNCTION) {
+		decls.push_back(decls[decls.size() - 1].kind());
+		for (int i = decls.size() - 1; i > 0; i--) {
+			decls[i] = decls[i - 1];
+		}
+		decls[0] = Declarator(POINTER);
 	}
-
+	
 	Type type = Type(typespec, decls);
-	types->push_back(type);
+	declareSymbol(name, type);
+	(*types).push_back(type);
 }
 
 
@@ -303,7 +307,7 @@ static void parameter(Types* types)
 
 static Types* parameters()
 {
-	Types* _parameters;
+	Types* _parameters = new Types();
 	if (lookahead == VOID) {
 		match(VOID);
 	} else {
@@ -789,24 +793,29 @@ static void functionOrGlobal()
 	Declarators decls;
 
 	if (declarator(decls, name, FUNCTION_DECL)) {
+		Type type = Type(typespec, decls);
+		defineFunction(name, type);
+
 		match('{');
 		declarations();
 		statements();
 		match('}');
 		closeScope();
+
 	} else {
+
 		Type type = Type(typespec, decls);
-		cout << type << endl;
+		declareSymbol(name, type);
+
 		while (lookahead == ',') {
 			match(',');
 			decls.clear();
 			declarator(decls, name);
 			type = Type(typespec, decls);
-			cout << type << endl;
+			declareSymbol(name, type);
 		}
 		match(';');
 	}
-
 }
 
 

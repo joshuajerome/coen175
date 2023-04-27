@@ -30,18 +30,20 @@ bool Declarator::operator!=(const Declarator &that) const{
     return !operator==(that);
 }
 bool Declarator::operator==(const Declarator &that)const{
-    if(_kind != that._kind) {
+    if (_kind != that._kind) {
         return false;
-    } else if(_kind == ARRAY) {
+    } 
+    if (_kind == POINTER) {
+        return true;
+    }
+    if (_kind == ARRAY) {
         return _length == that._length;
+    } 
+    assert(_kind == FUNCTION);
+    if (!_parameters || !that._parameters) {
+        return true;
     }
-    if(_kind == FUNCTION) {
-        if(!_parameters || !that._parameters){
-            return true;
-        }
-        return _parameters ==that._parameters;
-    }
-    return true;
+    return *_parameters == *that._parameters;
 }
 
 bool Type::isFunction() const {
