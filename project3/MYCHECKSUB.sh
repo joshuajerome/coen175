@@ -23,13 +23,13 @@ hostname -f | grep 'linux.*.engr.scu.edu' >/dev/null ||
 
 echo "Checking submission ..."
 test -r $1 && test `wc -c < $1` -gt 1000000 \
-    && echo "Submission too large" 1>&2 && die
+    && echo "Submission too large" 1>&2
 
 echo "Extracting submission ..."
 tar -C $WORKDIR -xf $1 || die
 
 echo "Compiling project ..."
-(cd $WORKDIR && cd phase2 && rm -f *.o scc core && make) || die
+(cd $WORKDIR && cd phase3 && rm -f *.o scc core && make) || die
 
 echo "Extracting examples ..."
 tar -C $WORKDIR -xf $2 || die
@@ -40,7 +40,7 @@ exec 3> CHECKSUB.diff
 (cd $WORKDIR/my_examples && for FILE in *.c; do
     echo -n "$FILE ... "
     echo "$FILE ..." 1>&3
-    (ulimit -t 1; ../phase2/scc) < $FILE 2>/dev/null |
+    (ulimit -t 1; ../phase3/scc) < $FILE 2>/dev/null |
 	cmp - `basename $FILE .c`.out 1>&3 2>/dev/null && echo ok || echo failed
 done)
 
