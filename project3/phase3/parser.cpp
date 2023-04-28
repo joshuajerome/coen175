@@ -274,9 +274,9 @@ static void parameter(Types* types)
 
 	declarator(decls, name);
 
-	if (decls.size() > 0) {
+	if (decls.size() > 0)  {
 		if (decls[0].kind() == ARRAY) {
-		decls[0] = Declarator(POINTER);
+			decls[0] = Declarator(POINTER);
 		} else if (decls[0].kind() == FUNCTION) {
 			decls.push_back(decls[decls.size() - 1].kind());
 			for (int i = decls.size() - 1; i > 0; i--) {
