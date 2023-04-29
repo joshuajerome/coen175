@@ -10,8 +10,8 @@
 # include <iostream>
 # include "tokens.h"
 # include "lexer.h"
-# include "checker.h"
 # include "type.h"
+# include "checker.h"
 
 using namespace std;
 

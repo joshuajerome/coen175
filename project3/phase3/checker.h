@@ -1,27 +1,11 @@
 # ifndef CHECKER_h
 # define CHECKER_h
-# include <iostream>
 # include "type.h"
 
-using namespace std;
+void openScope();
+void closeScope();
+void defineFunction(const std::string &name, const Type &type);
+void declareSymbol(const std::string &name, const Type &type);
+void checkIdentifier(const std::string &name);
 
-void openScope() {
-    cout << "open scope" << endl;
-}
-
-void closeScope() {
-    cout << "close scope" << endl;
-}
-
-void defineFunction(const string &name, const Type &type) {
-    cout << "declare " << name << " as " << type << endl;
-}
-
-void declareSymbol(const string &name, const Type &type) {
-    cout << "declare " << name << " as " << type << endl;
-}
-
-void checkIdentifier(const string &name) {
-    cout << "declare " << name << " as ";
-}
 # endif
