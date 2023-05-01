@@ -177,6 +177,7 @@ static bool declarator(Declarators &decls, string &name, int kind = PLAIN_DECL)
 						hasparams = true;
 						match(')');
 						decls.push_back(function);
+
 			}
 		}
 		while (1) {
@@ -352,8 +353,10 @@ static void primaryExpression()
 	else if (lookahead == NUM)
 		match(NUM);
 
-	else if (lookahead == ID)
+	else if (lookahead == ID) {
+		checkIdentifier(lexbuf);
 		match(ID);
+	}
 
 	else
 		error();
