@@ -51,7 +51,6 @@ void defineFunction(const string &name, const Type &type) {
 void declareSymbol(const string &name, const Type &type) {
     
     Symbol* symbol = head->find(name);
-    // Type t = symbol->type();
 
     if (symbol == nullptr) {
         if (type.isFunction() || head->enclosing() == nullptr) {
@@ -60,12 +59,14 @@ void declareSymbol(const string &name, const Type &type) {
             else if (externs.at(name) != type) report(E2, name);
 
             head->insert(new Symbol(name, type));
-        } else if (type.isFunction() && head->enclosing() != nullptr) {
+        }
+    } else {
+        Type t = symbol->type();
+        if (!(t.isFunction() && head->enclosing() == nullptr)) { // not (declaraing functino in global scope)
             report(E3, name);
         } else {
-
-            if (externs.count(name) == 0) externs.insert(make_pair(name,type));
-            else if (externs.at(name) != type) report(E2, name);
+            if (externs.count(name) == 0) externs.insert(make_pair(name,t));
+            else if (externs.at(name) != t) report(E2, name);
         }
     }
 }
