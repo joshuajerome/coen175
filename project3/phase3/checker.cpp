@@ -57,16 +57,13 @@ void declareSymbol(const string &name, const Type &type) {
 
             if (externs.count(name) == 0) externs.insert(make_pair(name,type));
             else if (externs.at(name) != type) report(E2, name);
-
-            head->insert(new Symbol(name, type));
         }
+        head->insert(new Symbol(name, type));
     } else {
-        Type t = symbol->type();
-        if (!(t.isFunction() && head->enclosing() == nullptr)) { // not (declaraing functino in global scope)
+        if (!(type.isFunction() || head->enclosing() == nullptr)) { // not (declaraing functino in global scope)
             report(E3, name);
-        } else {
-            if (externs.count(name) == 0) externs.insert(make_pair(name,t));
-            else if (externs.at(name) != t) report(E2, name);
+        } else if (head->lookup(name)->type() != type) {
+            report(E2, name);
         }
     }
 }

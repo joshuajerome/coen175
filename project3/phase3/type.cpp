@@ -47,17 +47,17 @@ bool Declarator::operator==(const Declarator &that)const{
 }
 
 bool Type::isFunction() const {
-    assert(_decls.size() > 0);
+    if (_decls.size() <= 0) return false;
     return _decls[0].kind() == FUNCTION;
 }
 
 bool Type::isArray() const {
-    assert(_decls.size() > 0);
+    if (_decls.size() <= 0) return false;
     return _decls[0].kind() == ARRAY;
 }
 
 bool Type::isPointer() const {
-    assert(_decls.size() > 0);
+    if (_decls.size() <= 0) return false;
     return _decls[0].kind() == POINTER;
 }
 
