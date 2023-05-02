@@ -37,8 +37,7 @@ void defineFunction(const string &name, const Type &type) {
         
         global->insert(new Symbol(name, type));
 
-    } 
-    else {
+    } else {
 
         Type t = symbol->type();
         if (t.isFunction() && t.declarators()[0].parameters() != nullptr) report(E1, name);
