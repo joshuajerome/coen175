@@ -17,12 +17,10 @@ map<string, Type> externs;
 
 void openScope() {
     head = new Scope(head);
-    cout << "open scope" << endl;
 }
 
 void closeScope() {
     head = head->enclosing();
-    cout << "close scope" << endl;
 }
 
 void defineFunction(const string &name, const Type &type) {
@@ -39,7 +37,8 @@ void defineFunction(const string &name, const Type &type) {
         
         global->insert(new Symbol(name, type));
 
-    } else {
+    } 
+    else {
 
         Type t = symbol->type();
         if (t.isFunction() && t.declarators()[0].parameters() != nullptr) report(E1, name);
@@ -52,16 +51,16 @@ void defineFunction(const string &name, const Type &type) {
 void declareSymbol(const string &name, const Type &type) {
     
     Symbol* symbol = head->find(name);
-    Type t = symbol->type();
+    // Type t = symbol->type();
 
     if (symbol == nullptr) {
-        if (t.isFunction() || head->enclosing() == nullptr) {
+        if (type.isFunction() || head->enclosing() == nullptr) {
 
             if (externs.count(name) == 0) externs.insert(make_pair(name,type));
             else if (externs.at(name) != type) report(E2, name);
 
             head->insert(new Symbol(name, type));
-        } else if (t.isFunction() && head->enclosing() != nullptr) {
+        } else if (type.isFunction() && head->enclosing() != nullptr) {
             report(E3, name);
         } else {
 
