@@ -24,12 +24,15 @@ void closeScope() {
 }
 
 void defineFunction(const string &name, const Type &type) {
+
     Scope* global = head;
+
     while (global->enclosing() != nullptr) {
         global = global->enclosing();
     }
 
     Symbol* symbol = global->find(name);
+    
     if (symbol == nullptr) {
 
         if (externs.count(name) == 0) externs.insert(make_pair(name,type));
@@ -47,23 +50,25 @@ void defineFunction(const string &name, const Type &type) {
     }
 }
 
+bool isExternal(const Type &type) {
+    return type.isFunction() || head->enclosing() == nullptr;
+}
+
 void declareSymbol(const string &name, const Type &type) {
-    
-    Symbol* symbol = head->find(name);
 
-    if (symbol == nullptr) {
-        if (type.isFunction() || head->enclosing() == nullptr) {
+    Symbol* sym = head->find(name);
 
-            if (externs.count(name) == 0) externs.insert(make_pair(name,type));
-            else if (externs.at(name) != type) report(E2, name);
+    if (sym == nullptr) {
+        if (isExternal(type)) {
+            if (externs.count(name) && externs.at(name) != type)
+                report(E2, name);
+            else externs.insert(make_pair(name, type));
         }
         head->insert(new Symbol(name, type));
-    } else {
-        if (!(type.isFunction() || head->enclosing() == nullptr)) { // not (declaraing functino in global scope)
-            report(E3, name);
-        } else if (head->lookup(name)->type() != type) {
-            report(E2, name);
-        }
+    } else if (!isExternal(type)) {
+        report(E3, name);
+    } else if (type != sym->type()) {
+        report(E2, name);
     }
 }
 
