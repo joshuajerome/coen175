@@ -46,7 +46,10 @@ void defineFunction(const string &name, const Type &type) {
         if (t.isFunction() && t.declarators()[0].parameters() != nullptr) report(E1, name);
         else if (t != type) report(E2, name);
 
-        else global->insert(new Symbol(name, type));
+        else {
+            global->remove(name);
+            global->insert(new Symbol(name, type));
+        }
     }
 }
 

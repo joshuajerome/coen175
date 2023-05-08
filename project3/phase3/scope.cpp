@@ -1,8 +1,10 @@
+# include <cassert>
 # include "scope.h"
 
 using namespace std;
 
 void Scope::insert(Symbol* symbol) {
+    assert(!find(symbol->name()));
     _symbols.push_back(symbol);
 }
 

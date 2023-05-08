@@ -808,7 +808,7 @@ static void functionOrGlobal()
 		closeScope();
 
 	} else {
-
+		
 		Type type = Type(typespec, decls);
 		declareSymbol(name, type);
 
@@ -820,6 +820,7 @@ static void functionOrGlobal()
 			declareSymbol(name, type);
 		}
 		match(';');
+		
 	}
 }
 
