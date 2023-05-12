@@ -295,3 +295,24 @@ ostream &operator <<(ostream &ostr, const Type &type)
 
 	return ostr;
 }
+
+Type Type::promote() const {
+
+	if (this->specifier() == CHAR && this->declarators().empty()) {
+		return Type(INT);
+
+	} else if (this->isArray()) {
+		
+		Declarators d(this->declarators());
+		d.pop_front();
+		d.push_front(Pointer());
+		return Type(this->specifier(), d);
+
+	} else if (this->isFunction()) {
+		
+		Declarators d(this->declarators());
+		d.push_front(Pointer());
+		return Type(this->specifier(), d);
+	}
+	return *this;
+}

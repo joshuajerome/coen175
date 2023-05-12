@@ -88,6 +88,8 @@ public:
     bool isPointer() const;
     bool isFunction() const;
     Types *parameters() const;
+
+    Type promote() const;
 };
 
 std::ostream &operator <<(std::ostream &ostr, const Type &type);

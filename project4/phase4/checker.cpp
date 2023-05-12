@@ -23,21 +23,27 @@
 
 using namespace std;
 
-
 static map <string, Type> externs;
 static Scope *current, *globals;
 static const Type error(ERROR);
+
+static const Type integer(INT);
+static const Type character(CHARACTER);
 
 static string redefined = "redefinition of '%s'";
 static string redeclared = "redeclaration of '%s'";
 static string conflicting = "conflicting types for '%s'";
 static string undeclared = "'%s' undeclared";
 
-static string E5 = "invalid operands to binary operator";
-static string E6 = "invalid operand to unary operator";
-static string E7 = "invalid type in cast expression";
-static string E8 = "called object is not a function";
-static string E9 = "invalid arguments to called function";
+static string invalidType = "'%s' has invalid type";
+static string invalidBreak = "break statement not within loop";
+static string invalidReturn = "invalid return type";
+static string reqLvalue = "lvalue required in expression";
+static string invalidBinaryOps = "invalid operands to binary %s";
+static string unary = "invalid operand to unary %s";
+static string cast = "invalid type in cast expression";
+static string function = "called object is not a function";
+static string invalidArgs = "invalid arguments to called function";
 
 
 /*
@@ -71,18 +77,6 @@ Scope *closeScope()
 	return old;
 }
 
-bool checkInvalidDeclarator(Declarators decls) {
-	for (auto it = decls.begin(); it != decls.end(); it++) {
-		if (it->kind() != POINTER && next(it) != decls.end()) {
-			if (it->kind() == ARRAY && next(it)->kind() == FUNCTION) {
-				return false;
-			} else if (it->kind() == FUNCTION && next(it)->kind() != POINTER)
-				return false;
-		} 
-	}
-	return true;
-}
-
 /*
  * Function:	defineFunction
  *
@@ -93,7 +87,7 @@ Symbol *defineFunction(const string &name, const Type &type)
 {
 	cout << "define " << name << " as " << type << endl;
 
-	checkInvalidDeclarator(type.declarators());
+	checkDecls(type.declarators());
 	Symbol *symbol = globals->find(name);
 
 	if (symbol == nullptr) {
@@ -132,7 +126,7 @@ Symbol *declareSymbol(const string &name, const Type &type)
 {
 	cout << "declare " << name << " as " << type << endl;
 
-	checkInvalidDeclarator(type.declarators());
+	checkDecls(type.declarators());
 	Symbol *symbol = current->find(name);
 
 	if (symbol == nullptr) {
@@ -177,32 +171,148 @@ Symbol *checkIdentifier(const string &name)
 	return symbol;
 }
 
-Type checkLogicalOr(const Type left, const Type right) {
+// 2.2.1
+bool checkDecls(const Declarators &decls) {
+	for (auto it = decls.begin(); it != decls.end(); it++) {
+		if (it->kind() != POINTER && next(it) != decls.end()) {
+			if (it->kind() == ARRAY && next(it)->kind() == FUNCTION) {
+				return false;
+			} else if (it->kind() == FUNCTION && next(it)->kind() != POINTER)
+				return false;
+		} 
+	}
+	return true;
+}
+
+// 2.2.3
+Type checkLogicalExpression(const Type &left, const Type &right) {
 	if (left == error || right == error) {
 		return error;
 	}
-	return Type(INT);
+	return integer;
 }
 
-Type checkLogicalAnd(const Type left, const Type right) {
-	if (left == error || right == error) {
+// 2.2.4
+Type checkEqualityandRelational(const Type &left, const Type &right) {
+	
+	Type left_type = left.promote(), right_type = right.promote();
+
+	if (left_type == error || right_type == error)
+		return error;
+
+	if (left_type != right_type) {
+		report(invalidBinaryOps);
 		return error;
 	}
-	return Type(INT);
+
+	return integer;
 }
 
-Type checkLogicalNot(const Type left) {
-	if (left == error) {
-		return error;
+// 2.2.5
+Type check_ADD(const Type &left, const Type &right) {
+
+	Type left_type = left.promote(), right_type = right.promote();
+	
+	// both are integer
+	if (left_type == integer && right_type == integer)
+		return integer;
+
+	if (left_type.isPointer() && (right_type == integer) && notFunc(left_type))
+		return left_type;
+	if ((left_type == integer) && right_type.isPointer() && notFunc(right_type))
+		return right_type;
+
+	// report(invalidBinaryOps);
+	return error;
+}
+
+Type check_SUB(const Type &left, const Type &right) {
+
+	Type left_type = left.promote(), right_type = right.promote();
+
+	// both are integer
+	if (left_type == integer && right_type == integer) 
+		return integer;
+
+	// left is pointer to T and right is type int
+	if (left_type.isPointer() && (right_type == integer) && notFunc(left_type)) 
+		return left_type;
+
+	// both are pointer to the same T
+	if (left_type.isPointer() && right_type.isPointer() && 
+		checkTs(left_type, right_type) &&
+		notFunc(left_type) && notFunc(right_type)) {
+			return integer;
+		}
+	
+	// report(invalidBinaryOps);
+	return error;
+}
+
+bool notFunc(const Type &t) {
+	auto it = t.declarators().begin();
+	it++;
+	return it->kind() != FUNCTION;
+}
+
+bool checkTs(const Type &left, const Type &right) {
+	auto itLeft = left.declarators().begin(), 
+		itRight = right.declarators().begin();
+	itLeft++, itRight++;
+	return itLeft == itRight;
+}
+
+// 2.26
+Type checkMultiplicativeExpression(const Type &left, const Type &right) {
+
+	Type left_type = left.promote(), right_type = right.promote();
+
+	if ((left_type == integer) && (right_type == integer)) return integer;
+
+	return error; // E5
+}
+
+// 2.2.7
+Type checkLogicalNot(const Type &right) {
+	Type right_type = right.promote();
+	if (right_type == integer)
+		return integer;
+	return error; // ????
+}
+
+Type checkNegate(const Type &right) {
+	Type right_type = right.promote();
+	if (right_type == integer)
+		return integer;
+	return error; // E6
+}
+
+Type checkDeref(const Type &right) {
+	Type right_type = right.promote();
+	if (right_type.isPointer()) {
+		Declarators d = right_type.declarators();
+		d.pop_front();
+		return Type(right_type.specifier(), d);
 	}
-	return Type(INT);
-} 
-
-Type promote() {
-
+	return error; // E6
 }
 
-Type checkMul(Type left, Type right) {
+Type checkAddr(const Type &right) {
+	Declarators d = right.declarators();
+	d.push_front(Pointer());
+	return Type(right.specifier(), d);
+
+	return error;	
+}
+
+Type checkSizeOf(const Type &right) {
+	if (notFunc(right)) return integer;
+	return error; // E6
+}
+
+Type checkCast(const Type &left) {
+	Type left_type = left.promote();
+	return error;
 }
 
 
