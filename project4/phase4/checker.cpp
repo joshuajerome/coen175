@@ -14,16 +14,16 @@
  *				- inserting an undeclared symbol with the error type
  */
 
-# include <map>
-# include <cassert>
-# include <iostream>
-# include "lexer.h"
-# include "tokens.h"
-# include "checker.h"
+#include <map>
+#include <cassert>
+#include <iostream>
+#include "lexer.h"
+#include "tokens.h"
+#include "checker.h"
 
 using namespace std;
 
-static map <string, Type> externs;
+static map<string, Type> externs;
 static Scope *current, *globals;
 static const Type error(ERROR);
 
@@ -45,7 +45,6 @@ static string E7 = "invalid type in cast expression";
 static string E8 = "called object is not a function";
 static string E9 = "invalid arguments to called function";
 
-
 /*
  * Function:	openScope
  *
@@ -61,7 +60,6 @@ Scope *openScope()
 
 	return current;
 }
-
 
 /*
  * Function:	closeScope
@@ -90,7 +88,8 @@ Symbol *defineFunction(const string &name, const Type &type)
 	checkDecls(type.declarators());
 	Symbol *symbol = globals->find(name);
 
-	if (symbol == nullptr) {
+	if (symbol == nullptr)
+	{
 		if (externs.count(name) && externs.at(name) != type)
 			report(conflicting, name);
 		else
@@ -98,13 +97,15 @@ Symbol *defineFunction(const string &name, const Type &type)
 
 		symbol = new Symbol(name, type);
 		globals->insert(symbol);
-
-	} else {
+	}
+	else
+	{
 		if (symbol->type().isFunction() && symbol->type().parameters())
 			report(redefined, name);
 		else if (type != symbol->type())
 			report(conflicting, name);
-		else {
+		else
+		{
 			symbol = new Symbol(name, type);
 			globals->remove(name);
 			globals->insert(symbol);
@@ -113,7 +114,6 @@ Symbol *defineFunction(const string &name, const Type &type)
 
 	return symbol;
 }
-
 
 /*
  * Function:	declareSymbol
@@ -129,8 +129,10 @@ Symbol *declareSymbol(const string &name, const Type &type)
 	checkDecls(type.declarators());
 	Symbol *symbol = current->find(name);
 
-	if (symbol == nullptr) {
-		if (current == globals || type.isFunction()) {
+	if (symbol == nullptr)
+	{
+		if (current == globals || type.isFunction())
+		{
 			if (externs.count(name) && externs.at(name) != type)
 				report(conflicting, name);
 			else
@@ -139,8 +141,8 @@ Symbol *declareSymbol(const string &name, const Type &type)
 
 		symbol = new Symbol(name, type);
 		current->insert(symbol);
-
-	} else if (current != globals && !type.isFunction())
+	}
+	else if (current != globals && !type.isFunction())
 		report(redeclared, name);
 
 	else if (type != symbol->type())
@@ -148,7 +150,6 @@ Symbol *declareSymbol(const string &name, const Type &type)
 
 	return symbol;
 }
-
 
 /*
  * Function:	checkIdentifier
@@ -162,7 +163,8 @@ Symbol *checkIdentifier(const string &name)
 {
 	Symbol *symbol = current->lookup(name);
 
-	if (symbol == nullptr) {
+	if (symbol == nullptr)
+	{
 		report(undeclared, name);
 		symbol = new Symbol(name, error);
 		current->insert(symbol);
@@ -172,35 +174,44 @@ Symbol *checkIdentifier(const string &name)
 }
 
 // 2.2.1
-bool checkDecls(const Declarators &decls) {
-	for (auto it = decls.begin(); it != decls.end(); it++) {
-		if (it->kind() != POINTER && next(it) != decls.end()) {
-			if (it->kind() == ARRAY && next(it)->kind() == FUNCTION) {
+bool checkDecls(const Declarators &decls)
+{
+	for (auto it = decls.begin(); it != decls.end(); it++)
+	{
+		if (it->kind() != POINTER && next(it) != decls.end())
+		{
+			if (it->kind() == ARRAY && next(it)->kind() == FUNCTION)
+			{
 				return false;
-			} else if (it->kind() == FUNCTION && next(it)->kind() != POINTER)
+			}
+			else if (it->kind() == FUNCTION && next(it)->kind() != POINTER)
 				return false;
-		} 
+		}
 	}
 	return true;
 }
 
 // 2.2.3
-Type checkLogicalExpression(const Type &left, const Type &right) {
-	if (left == error || right == error) {
+Type checkLogicalExpression(const Type &left, const Type &right)
+{
+	if (left == error || right == error)
+	{
 		return error;
 	}
 	return integer;
 }
 
 // 2.2.4
-Type checkEqualityandRelational(const Type &left, const Type &right) {
-	
+Type checkEqualityandRelational(const Type &left, const Type &right)
+{
+
 	Type left_type = left.promote(), right_type = right.promote();
 
 	if (left_type == error || right_type == error)
 		return error;
 
-	if (left_type != right_type) {
+	if (left_type != right_type)
+	{
 		report(E5);
 		return error;
 	}
@@ -209,10 +220,11 @@ Type checkEqualityandRelational(const Type &left, const Type &right) {
 }
 
 // 2.2.5
-Type checkAdd(const Type &left, const Type &right) {
+Type checkAdd(const Type &left, const Type &right)
+{
 
 	Type left_type = left.promote(), right_type = right.promote();
-	
+
 	// both are integer
 	if (left_type == integer && right_type == integer)
 		return integer;
@@ -226,62 +238,70 @@ Type checkAdd(const Type &left, const Type &right) {
 	return error;
 }
 
-Type checkSub(const Type &left, const Type &right) {
+Type checkSub(const Type &left, const Type &right)
+{
 
 	Type left_type = left.promote(), right_type = right.promote();
 
 	// both are integer
-	if (left_type == integer && right_type == integer) 
+	if (left_type == integer && right_type == integer)
 		return integer;
 
 	// left is pointer to T and right is type int
-	if (left_type.isPointer() && (right_type == integer) && notFunc(left_type)) 
+	if (left_type.isPointer() && (right_type == integer) && notFunc(left_type))
 		return left_type;
 
 	// both are pointer to the same T
-	if (left_type.isPointer() && right_type.isPointer() && 
+	if (left_type.isPointer() && right_type.isPointer() &&
 		checkTs(left_type, right_type) &&
-		notFunc(left_type) && notFunc(right_type)) {
-			return integer;
-		}
-	
+		notFunc(left_type) && notFunc(right_type))
+	{
+		return integer;
+	}
+
 	report(E5);
 	return error;
 }
 
-bool notFunc(const Type &t) {
+bool notFunc(const Type &t)
+{
 	auto it = t.declarators().begin();
 	it++;
 	return it->kind() != FUNCTION;
 }
 
-bool checkTs(const Type &left, const Type &right) {
-	auto itLeft = left.declarators().begin(), 
-		itRight = right.declarators().begin();
+bool checkTs(const Type &left, const Type &right)
+{
+	auto itLeft = left.declarators().begin(),
+		 itRight = right.declarators().begin();
 	itLeft++, itRight++;
 	return itLeft == itRight;
 }
 
 // 2.26
-Type checkMultiplicativeExpression(const Type &left, const Type &right) {
+Type checkMultiplicativeExpression(const Type &left, const Type &right)
+{
 
 	Type left_type = left.promote(), right_type = right.promote();
 
-	if ((left_type == integer) && (right_type == integer)) return integer;
+	if ((left_type == integer) && (right_type == integer))
+		return integer;
 
 	report(E5);
 	return error;
 }
 
 // 2.2.7
-Type checkLogicalNot(const Type &right) {
+Type checkLogicalNot(const Type &right)
+{
 	Type right_type = right.promote();
 	if (right_type == integer)
 		return integer;
 	return error; // and is NOT an lvalue
 }
 
-Type checkNegate(const Type &right) {
+Type checkNegate(const Type &right)
+{
 	Type right_type = right.promote();
 	if (right_type == integer)
 		return integer;
@@ -289,9 +309,11 @@ Type checkNegate(const Type &right) {
 	return error; // and is NOT an lvalue
 }
 
-Type checkDeref(const Type &right) {
+Type checkDeref(const Type &right)
+{
 	Type right_type = right.promote();
-	if (right_type.isPointer()) {
+	if (right_type.isPointer())
+	{
 		Declarators d = right_type.declarators();
 		d.pop_front();
 		return Type(right_type.specifier(), d); // and is an lvalue
@@ -300,32 +322,33 @@ Type checkDeref(const Type &right) {
 	return error;
 }
 
-Type checkAddr(const Type &right) {
+Type checkAddr(const Type &right)
+{
 	bool lvalue = false;
 	// check is lvalue
-	if (lvalue) {
+	if (lvalue)
+	{
 		Declarators d = right.declarators();
 		d.push_front(Pointer());
 		return Type(right.specifier(), d); // and is NOT an lvalue
 	}
-	return error;	
+	return error;
 }
 
-Type checkSizeOf(const Type &right) {
-	if (notFunc(right)) return integer;
+Type checkSizeOf(const Type &right)
+{
+	if (notFunc(right))
+		return integer;
 	report(E6);
 	return error; // and is NOT an lvalue
 }
 
-Type checkCast(const Type &left) {
+Type checkCast(const Type &left)
+{
 	Type left_type = left.promote();
-	if (checkDecls(left_type.declarators()) && !left_type.isArray() && !left_type.isFunction()) {
+	if (checkDecls(left_type.declarators()) && !left_type.isArray() && !left_type.isFunction())
+	{
 		return left_type; // and is not an lvalue
 	}
 	return error;
 }
-
-
-
-
-
