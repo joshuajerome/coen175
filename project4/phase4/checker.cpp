@@ -35,15 +35,15 @@ static string redeclared = "redeclaration of '%s'";
 static string conflicting = "conflicting types for '%s'";
 static string undeclared = "'%s' undeclared";
 
-static string invalidType = "'%s' has invalid type";
-static string invalidBreak = "break statement not within loop";
-static string invalidReturn = "invalid return type";
-static string reqLvalue = "lvalue required in expression";
-static string invalidBinaryOps = "invalid operands to binary %s";
-static string unary = "invalid operand to unary %s";
-static string cast = "invalid type in cast expression";
-static string function = "called object is not a function";
-static string invalidArgs = "invalid arguments to called function";
+static string E1 = "'%s' has invalid type";
+static string E2 = "break statement not within loop";
+static string E3 = "invalid return type";
+static string E4 = "lvalue required in expression";
+static string E5 = "invalid operands to binary %s";
+static string E6 = "invalid operand to unary %s";
+static string E7 = "invalid type in cast expression";
+static string E8 = "called object is not a function";
+static string E9 = "invalid arguments to called function";
 
 
 /*
@@ -201,7 +201,7 @@ Type checkEqualityandRelational(const Type &left, const Type &right) {
 		return error;
 
 	if (left_type != right_type) {
-		report(invalidBinaryOps);
+		report(E5);
 		return error;
 	}
 
@@ -209,7 +209,7 @@ Type checkEqualityandRelational(const Type &left, const Type &right) {
 }
 
 // 2.2.5
-Type check_ADD(const Type &left, const Type &right) {
+Type checkAdd(const Type &left, const Type &right) {
 
 	Type left_type = left.promote(), right_type = right.promote();
 	
@@ -222,11 +222,11 @@ Type check_ADD(const Type &left, const Type &right) {
 	if ((left_type == integer) && right_type.isPointer() && notFunc(right_type))
 		return right_type;
 
-	// report(invalidBinaryOps);
+	report(E5);
 	return error;
 }
 
-Type check_SUB(const Type &left, const Type &right) {
+Type checkSub(const Type &left, const Type &right) {
 
 	Type left_type = left.promote(), right_type = right.promote();
 
@@ -245,7 +245,7 @@ Type check_SUB(const Type &left, const Type &right) {
 			return integer;
 		}
 	
-	// report(invalidBinaryOps);
+	report(E5);
 	return error;
 }
 
@@ -269,7 +269,8 @@ Type checkMultiplicativeExpression(const Type &left, const Type &right) {
 
 	if ((left_type == integer) && (right_type == integer)) return integer;
 
-	return error; // E5
+	report(E5);
+	return error;
 }
 
 // 2.2.7
@@ -277,14 +278,15 @@ Type checkLogicalNot(const Type &right) {
 	Type right_type = right.promote();
 	if (right_type == integer)
 		return integer;
-	return error; // ????
+	return error; // and is NOT an lvalue
 }
 
 Type checkNegate(const Type &right) {
 	Type right_type = right.promote();
 	if (right_type == integer)
 		return integer;
-	return error; // E6
+	report(E6);
+	return error; // and is NOT an lvalue
 }
 
 Type checkDeref(const Type &right) {
@@ -292,26 +294,34 @@ Type checkDeref(const Type &right) {
 	if (right_type.isPointer()) {
 		Declarators d = right_type.declarators();
 		d.pop_front();
-		return Type(right_type.specifier(), d);
+		return Type(right_type.specifier(), d); // and is an lvalue
 	}
-	return error; // E6
+	report(E6);
+	return error;
 }
 
 Type checkAddr(const Type &right) {
-	Declarators d = right.declarators();
-	d.push_front(Pointer());
-	return Type(right.specifier(), d);
-
+	bool lvalue = false;
+	// check is lvalue
+	if (lvalue) {
+		Declarators d = right.declarators();
+		d.push_front(Pointer());
+		return Type(right.specifier(), d); // and is NOT an lvalue
+	}
 	return error;	
 }
 
 Type checkSizeOf(const Type &right) {
 	if (notFunc(right)) return integer;
-	return error; // E6
+	report(E6);
+	return error; // and is NOT an lvalue
 }
 
 Type checkCast(const Type &left) {
 	Type left_type = left.promote();
+	if (checkDecls(left_type.declarators()) && !left_type.isArray() && !left_type.isFunction()) {
+		return left_type; // and is not an lvalue
+	}
 	return error;
 }
 

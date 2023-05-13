@@ -28,8 +28,8 @@ Type checkLogicalExpression(const Type &left, const Type &right);
 Type checkEqualityandRelational(const Type &left, const Type &right);
 
 // 2.2.5
-Type check_ADD(const Type &left, const Type &right);
-Type check_SUB(const Type &left, const Type &right);
+Type checkAdd(const Type &left, const Type &right);
+Type checkSub(const Type &left, const Type &right);
 
 bool notFunc(const Type &t);
 bool checkTs(const Type &left, const Type &right);
