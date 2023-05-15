@@ -350,5 +350,89 @@ Type checkCast(const Type &left)
 	{
 		return left_type; // and is not an lvalue
 	}
+	report(E7);
 	return error;
+}
+
+Type checkParen(const Type& left)
+{
+	Declarators d = left.declarators();
+	d.push_front(Function(nullptr));
+	return Type(left.specifier(), d);
+}
+
+// 2.2.8
+Type checkArray(const Type &left, const Type &right)
+{
+	
+	Type left_type = left.promote(), right_type = right.promote();
+
+	if (left_type.isPointer()) 
+	{
+		Declarators d = left_type.declarators();
+		d.pop_front();
+		if (d.front().kind() != FUNCTION && right_type != integer)
+		{
+			return Type(left_type.specifier(), d);
+		}
+		else
+		{
+			report(E5);
+			return error;
+		}
+	}
+	return error;
+}
+
+Type checkFunc(const Type &left, const Type &right)
+{
+	Type left_type = left.promote(), right_type = right.promote();
+	
+	// has type pointer to function
+	if (left_type.isPointer()) 
+	{
+		Declarators d = left_type.declarators();
+		d.pop_front();
+		if (d.front().kind() == FUNCTION)
+			d.pop_front();
+		else
+		{
+			report(E8);
+			return error;
+		} 
+	}
+
+	// promote all args
+	Types* args = right_type.parameters();
+	auto parameterIterator = args->begin();
+	while (parameterIterator != args->end())
+	{
+		parameterIterator->promote();
+		parameterIterator++;
+	}
+
+	// check for declaration/definition and match the promoted args	
+	auto externsIterator = externs.begin();
+	bool match = false;
+
+	while (externsIterator != externs.end() || !match)
+	{
+		const Type &tmp = externsIterator->second;
+		if (&tmp == &left) // points to same addr
+		{
+			if (tmp.parameters()->size() == right_type.parameters()->size() && 
+				tmp.specifier() == right_type.specifier() && 
+				tmp.declarators() == right_type.declarators()) // num and types of params and args agree
+			{
+				match = true;
+			}
+			else
+			{
+				report(E9);
+				return error;
+			}
+		}
+	}
+
+	return left_type;
 }

@@ -877,7 +877,6 @@ static void functionOrGlobal()
 	Declarators decls;
 	string name;
 
-
 	typespec = specifier();
 
 	if (decl(decls, name, FUNCTION_DECL)) {
