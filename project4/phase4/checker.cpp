@@ -194,7 +194,9 @@ bool checkDecls(const Declarators &decls)
 // 2.2.3
 Type checkLogicalExpression(const Type &left, const Type &right)
 {
-	if (left == error || right == error)
+	Type left_type = left.promote(), right_type = right.promote();
+
+	if (left_type == error || right_type == error)
 	{
 		return error;
 	}
@@ -388,10 +390,10 @@ Type checkFunc(const Type &left, const Type &right)
 {
 	Type left_type = left.promote(), right_type = right.promote();
 	
-	// has type pointer to function
+	// has type pointer to function after promotion
+	Declarators d = left_type.declarators();
 	if (left_type.isPointer()) 
 	{
-		Declarators d = left_type.declarators();
 		d.pop_front();
 		if (d.front().kind() == FUNCTION)
 			d.pop_front();
@@ -434,5 +436,5 @@ Type checkFunc(const Type &left, const Type &right)
 		}
 	}
 
-	return left_type;
+	return Type(left_type.specifier(), d);
 }
