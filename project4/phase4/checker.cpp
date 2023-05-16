@@ -25,10 +25,10 @@ using namespace std;
 
 static map<string, Type> externs;
 static Scope *current, *globals;
-static const Type error(ERROR);
 
 static const Type integer(INT);
-static const Type character(CHARACTER);
+static const Type character(CHAR);
+static const Type error(ERROR);
 
 static string redefined = "redefinition of '%s'";
 static string redeclared = "redeclaration of '%s'";
@@ -194,27 +194,29 @@ bool checkDecls(const Declarators &decls)
 // 2.2.3
 Type checkLogicalExpression(const Type &left, const Type &right)
 {
-	Type left_type = left.promote(), right_type = right.promote();
-
-	if (left_type == error || right_type == error)
+	if (left == error || right == error)
 	{
 		return error;
 	}
+
+	Type left_type = left.promote(), right_type = right.promote();
+
 	return integer;
 }
 
 // 2.2.4
-Type checkEqualityandRelational(const Type &left, const Type &right)
+Type checkEqualityandRelational(const Type &left, const Type &right, const string name)
 {
+	if (left == error || right == error)
+	{
+		return error;
+	}
 
 	Type left_type = left.promote(), right_type = right.promote();
 
-	if (left_type == error || right_type == error)
-		return error;
-
 	if (left_type != right_type)
 	{
-		report(E5);
+		report(E5, name);
 		return error;
 	}
 
@@ -222,8 +224,13 @@ Type checkEqualityandRelational(const Type &left, const Type &right)
 }
 
 // 2.2.5
-Type checkAdd(const Type &left, const Type &right)
+Type checkAdd(const Type &left, const Type &right, const string name)
 {
+
+	if (left == error || right == error)
+	{
+		return error;
+	}
 
 	Type left_type = left.promote(), right_type = right.promote();
 
@@ -236,13 +243,18 @@ Type checkAdd(const Type &left, const Type &right)
 	if ((left_type == integer) && right_type.isPointer() && notFunc(right_type))
 		return right_type;
 
-	report(E5);
+	report(E5, name);
 	return error;
 }
 
-Type checkSub(const Type &left, const Type &right)
+Type checkSub(const Type &left, const Type &right, const string name)
 {
 
+	if (left == error || right == error)
+	{
+		return error;
+	}
+	
 	Type left_type = left.promote(), right_type = right.promote();
 
 	// both are integer
@@ -261,7 +273,7 @@ Type checkSub(const Type &left, const Type &right)
 		return integer;
 	}
 
-	report(E5);
+	report(E5, name);
 	return error;
 }
 
@@ -281,38 +293,49 @@ bool checkTs(const Type &left, const Type &right)
 }
 
 // 2.26
-Type checkMultiplicativeExpression(const Type &left, const Type &right)
+Type checkMultiplicativeExpression(const Type &left, const Type &right, const string name)
 {
+
+	if (left == error || right == error)
+	{
+		return error;
+	}
 
 	Type left_type = left.promote(), right_type = right.promote();
 
 	if ((left_type == integer) && (right_type == integer))
 		return integer;
 
-	report(E5);
+	report(E5, name);
 	return error;
 }
 
 // 2.2.7
 Type checkLogicalNot(const Type &right)
 {
+	if (right == error) return error;
+
 	Type right_type = right.promote();
 	if (right_type == integer)
 		return integer;
 	return error; // and is NOT an lvalue
 }
 
-Type checkNegate(const Type &right)
+Type checkNegate(const Type &right, const string name)
 {
+	if (right == error) return error;
+
 	Type right_type = right.promote();
 	if (right_type == integer)
 		return integer;
-	report(E6);
+	report(E6, name);
 	return error; // and is NOT an lvalue
 }
 
-Type checkDeref(const Type &right)
+Type checkDeref(const Type &right, const string name)
 {
+	if (right == error) return error;
+
 	Type right_type = right.promote();
 	if (right_type.isPointer())
 	{
@@ -320,12 +343,14 @@ Type checkDeref(const Type &right)
 		d.pop_front();
 		return Type(right_type.specifier(), d); // and is an lvalue
 	}
-	report(E6);
+	report(E6, name);
 	return error;
 }
 
 Type checkAddr(const Type &right)
 {
+	if (right == error) return error;
+
 	bool lvalue = false;
 	// check is lvalue
 	if (lvalue)
@@ -337,16 +362,20 @@ Type checkAddr(const Type &right)
 	return error;
 }
 
-Type checkSizeOf(const Type &right)
+Type checkSizeOf(const Type &right, const string name)
 {
+	if (right == error) return error;
+
 	if (notFunc(right))
 		return integer;
-	report(E6);
+	report(E6, name);
 	return error; // and is NOT an lvalue
 }
 
 Type checkCast(const Type &left)
 {
+	if (left == error) return error;
+
 	Type left_type = left.promote();
 	if (checkDecls(left_type.declarators()) && !left_type.isArray() && !left_type.isFunction())
 	{
@@ -358,15 +387,18 @@ Type checkCast(const Type &left)
 
 Type checkParen(const Type& left)
 {
+	if (left == error) return error;
+
 	Declarators d = left.declarators();
 	d.push_front(Function(nullptr));
 	return Type(left.specifier(), d);
 }
 
 // 2.2.8
-Type checkArray(const Type &left, const Type &right)
+Type checkArray(const Type &left, const Type &right, const string name)
 {
-	
+	if (left == error || right == error) return error;
+
 	Type left_type = left.promote(), right_type = right.promote();
 
 	if (left_type.isPointer()) 
@@ -379,62 +411,97 @@ Type checkArray(const Type &left, const Type &right)
 		}
 		else
 		{
-			report(E5);
+			report(E5, name);
 			return error;
 		}
 	}
 	return error;
 }
 
-Type checkFunc(const Type &left, const Type &right)
+Type checkFunc(const Type &left, const Types &args) // assuming Types is already promoted
 {
-	Type left_type = left.promote(), right_type = right.promote();
+	if (left == error) 
+	{
+		return error;
+	}
+	Type left_type = left.promote();
 	
 	// has type pointer to function after promotion
 	Declarators d = left_type.declarators();
-	if (left_type.isPointer()) 
+	if (left_type.isPointer() && !notFunc(left)) 
 	{
-		d.pop_front();
-		if (d.front().kind() == FUNCTION)
-			d.pop_front();
-		else
+		d.pop_front(); // pop pointer
+
+		Declarator func = Pointer(); // store function
+		d.pop_front(); // pop function
+
+		if (func.parameters() == nullptr)
 		{
-			report(E8);
-			return error;
+			return Type(left_type.specifier(), d);
 		} 
-	}
-
-	// promote all args
-	Types* args = right_type.parameters();
-	auto parameterIterator = args->begin();
-	while (parameterIterator != args->end())
-	{
-		parameterIterator->promote();
-		parameterIterator++;
-	}
-
-	// check for declaration/definition and match the promoted args	
-	auto externsIterator = externs.begin();
-	bool match = false;
-
-	while (externsIterator != externs.end() || !match)
-	{
-		const Type &tmp = externsIterator->second;
-		if (&tmp == &left) // points to same addr
+		else 
 		{
-			if (tmp.parameters()->size() == right_type.parameters()->size() && 
-				tmp.specifier() == right_type.specifier() && 
-				tmp.declarators() == right_type.declarators()) // num and types of params and args agree
+			if (func.parameters()->size() == args.size())
 			{
-				match = true;
-			}
-			else
-			{
-				report(E9);
-				return error;
+				auto funcIterator = func.parameters()->begin();
+				auto argsIterator = args.begin();
+
+				while (argsIterator != args.end())
+				{
+					if (*argsIterator == error) return error;
+					if (funcIterator->promote() != *argsIterator) // num and types of params and args agree
+					{
+						report(E9);
+						return error;
+					}
+					funcIterator++;
+					argsIterator++;
+				}
+
 			}
 		}
 	}
-
+	else 
+	{
+		report(E8);
+		return error;
+	}
 	return Type(left_type.specifier(), d);
+}
+
+Type checkReturn(const Type &left, const Type &right) 
+{
+	if (left == error || right == error) return error;
+
+	Type left_type = left.promote(), right_type = right.promote();
+	if (left_type == right_type) {
+		return left_type;
+	}
+	report(E3);
+	return error;
+}
+
+void checkBreak(int counter)
+{
+	if (counter < 0)
+		report(E2);
+}
+
+void checkAssignment(const Type& left, const Type &right, bool lvalue)
+{
+	if (left == error || right == error) report(E5, "=");
+
+	Type right_type = right.promote();
+
+	if (lvalue && !left.isArray() && !left.isFunction())
+	{
+		if (left != right_type)
+		{
+			report(E5, "=");
+		}
+	}
+	else
+	{
+		report(E4);
+	}
 }
