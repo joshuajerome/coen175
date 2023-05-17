@@ -286,7 +286,7 @@ bool notFunc(Type t)
 	if (distance > 1) { // >= ?
 		Declarators tDecls = t.declarators();
 		tDecls.pop_front();
-		return tDecls.front().kind() == FUNCTION;
+		return tDecls.front().kind() != FUNCTION;
 	}
 	return true;
 }
@@ -366,10 +366,13 @@ Type checkAddr(const Type &right, const bool &lvalue)
 {
 	if (right == error) return error;
 
+	cout << "addr performed on type: " << right << endl;
+
 	if (lvalue)
 	{
 		Declarators d = right.declarators();
 		d.push_front(Pointer());
+		cout << "addr valid" << endl;
 		return Type(right.specifier(), d); // and is NOT an lvalue
 	}
 	report(E4);
@@ -443,21 +446,16 @@ Type checkArray(const Type &left, const Type &right, const string name)
 
 Type checkFunc(const Type &left, const Types &args) // assuming Types is already promoted
 {
-	if (left == error) 
-	{
-		return error;
-	}
+	if (left == error) return error;
+
 	Type left_type = left.promote();
-	
 	// has type pointer to function after promotion
 	Declarators d = left_type.declarators();
-	if (left_type.isPointer() && !notFunc(left)) 
+	if (left_type.isPointer() && left.isFunction()) 
 	{
 		d.pop_front(); // pop pointer
-
-		Declarator func = Pointer(); // store function
+		Declarator func = d.front(); // store function
 		d.pop_front(); // pop function
-
 		if (func.parameters() == nullptr)
 		{
 			return Type(left_type.specifier(), d);
@@ -481,6 +479,11 @@ Type checkFunc(const Type &left, const Types &args) // assuming Types is already
 					argsIterator++;
 				}
 
+			}
+			else
+			{
+				report(E9);
+				return error;
 			}
 		}
 	}
@@ -517,8 +520,6 @@ void checkAssignment(const Type& left, const Type &right, bool &lvalue)
 	if (lvalue && !left.isArray() && !left.isFunction())
 	{
 		Type left_type = left.promote(), right_type = right.promote();
-		cout << "left type = " << left_type << endl;
-		cout << "right type = " << right_type << endl;
 
 		if (left_type != right_type)
 		{

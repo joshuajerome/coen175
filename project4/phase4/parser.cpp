@@ -515,7 +515,6 @@ static Type prefixExpression(bool &lvalue)
 	} else if (lookahead == '&') {
 		match('&');
 		Type left = prefixExpression(lvalue);
-		cout << "left: " << left << endl;
 		cout << "check &(addr)" << endl;
 		left = checkAddr(left, lvalue);
 		lvalue = false;
