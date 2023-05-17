@@ -1,5 +1,5 @@
 *./vscode
-*.tar
+
 *.diff
 *.o
 **/.DS_Store
