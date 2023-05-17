@@ -534,9 +534,8 @@ static Type prefixExpression(bool &lvalue)
 		decl(decls, name, ABSTRACT_DECL);
 		match(')');
 		Type left = prefixExpression(lvalue);
-		cout << "before cast: " << left << endl;
-		cout << "check cast" << endl;
 		Type castAs(typespec, decls);
+		cout << "check cast" << endl;
 		left = checkCast(castAs);
 		lvalue = false;
 		return left;

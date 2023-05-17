@@ -534,5 +534,4 @@ void checkAssignment(const Type& left, const Type &right, bool &lvalue)
 		report(E4);
 		return;
 	}
-	lvalue = true;
 }
