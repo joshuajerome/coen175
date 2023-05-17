@@ -173,7 +173,6 @@ Symbol *checkIdentifier(const string &name)
 		symbol = new Symbol(name, error);
 		current->insert(symbol);
 	}
-
 	return symbol;
 }
 
@@ -281,19 +280,31 @@ Type checkSub(const Type &left, const Type &right, const string name)
 	return error;
 }
 
-bool notFunc(const Type &t)
+bool notFunc(Type t)
 {
-	auto it = t.declarators().begin();
-	it++;
-	return it->kind() != FUNCTION;
+	int distance = std::distance(t.declarators().begin(), t.declarators().end());
+	if (distance > 1) { // >= ?
+		Declarators tDecls = t.declarators();
+		tDecls.pop_front();
+		return tDecls.front().kind() == FUNCTION;
+	}
+	return true;
 }
 
-bool checkTs(const Type &left, const Type &right)
+bool checkTs(Type left, Type right)
 {
-	auto itLeft = left.declarators().begin(),
-		 itRight = right.declarators().begin();
-	itLeft++, itRight++;
-	return itLeft == itRight;
+	if (!left.isPointer() || !right.isPointer()) return false;
+
+	int distanceLeft = std::distance(left.declarators().begin(), left.declarators().end());
+	int distanceRight = std::distance(right.declarators().begin(), right.declarators().end());
+
+	if (distanceLeft == distanceRight) {
+		Declarators leftDecls = left.declarators(), rightDecls = right.declarators();
+		leftDecls.pop_front();
+		rightDecls.pop_front();
+		return (leftDecls == rightDecls) && (left.specifier() == right.specifier()) ;
+	}
+	return false;
 }
 
 // 2.26
@@ -351,18 +362,17 @@ Type checkDeref(const Type &right, const string name)
 	return error;
 }
 
-Type checkAddr(const Type &right)
+Type checkAddr(const Type &right, const bool &lvalue)
 {
 	if (right == error) return error;
 
-	bool lvalue = false;
-	// check is lvalue
 	if (lvalue)
 	{
 		Declarators d = right.declarators();
 		d.push_front(Pointer());
 		return Type(right.specifier(), d); // and is NOT an lvalue
 	}
+	report(E4);
 	return error;
 }
 
@@ -370,7 +380,7 @@ Type checkSizeOf(const Type &right, const string name)
 {
 	if (right == error) return error;
 
-	if (notFunc(right))
+	if (!right.isFunction())
 		return integer;
 	report(E6, name);
 	return error; // and is NOT an lvalue
@@ -380,8 +390,14 @@ Type checkCast(const Type &left)
 {
 	if (left == error) return error;
 
+	if (left.isArray() || left.isFunction()) {
+		report(E7);
+		return error;
+	}
+
 	Type left_type = left.promote();
-	if (checkDecls(left_type.declarators()) && !left_type.isArray() && !left_type.isFunction())
+
+	if (checkDecls(left_type.declarators()))
 	{
 		return left_type; // and is not an lvalue
 	}
@@ -409,15 +425,18 @@ Type checkArray(const Type &left, const Type &right, const string name)
 	{
 		Declarators d = left_type.declarators();
 		d.pop_front();
-		if (d.front().kind() != FUNCTION && right_type != integer)
+		if (d.empty()) 
 		{
-			return Type(left_type.specifier(), d);
+			if (right_type == integer)
+				return Type(left_type.specifier(), d);
 		}
 		else
 		{
-			report(E5, name);
-			return error;
+			if (d.front().kind() != FUNCTION && right_type == integer)
+				return Type(left_type.specifier(), d);
 		}
+		report(E5, name);
+		return error;
 	}
 	return error;
 }
@@ -491,21 +510,28 @@ void checkBreak(int counter)
 		report(E2);
 }
 
-void checkAssignment(const Type& left, const Type &right, bool lvalue)
+void checkAssignment(const Type& left, const Type &right, bool &lvalue)
 {
-	if (left == error || right == error) report(E5, "=");
-
-	Type right_type = right.promote();
+	if (left == error || right == error) return;
 
 	if (lvalue && !left.isArray() && !left.isFunction())
 	{
-		if (left != right_type)
+		Type left_type = left.promote(), right_type = right.promote();
+		cout << "left type = " << left_type << endl;
+		cout << "right type = " << right_type << endl;
+
+		if (left_type != right_type)
 		{
+			lvalue = false;
 			report(E5, "=");
+			return;
 		}
 	}
 	else
 	{
+		lvalue = false;
 		report(E4);
+		return;
 	}
+	lvalue = true;
 }

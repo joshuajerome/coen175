@@ -500,7 +500,7 @@ static Type prefixExpression(bool &lvalue)
 		match('-');
 		Type left = prefixExpression(lvalue);
 		cout << "check -(neg)" << endl;
-		left = checkNegate(left,name);
+		left = checkNegate(left,"-");
 		lvalue = false;
 		return left;
 
@@ -508,15 +508,16 @@ static Type prefixExpression(bool &lvalue)
 		match('*');
 		Type left = prefixExpression(lvalue);
 		cout << "check *(deref)" << endl;
-		left = checkDeref(left,name);
+		left = checkDeref(left,"*");
 		lvalue = true;
 		return left;
 
 	} else if (lookahead == '&') {
 		match('&');
 		Type left = prefixExpression(lvalue);
+		cout << "left: " << left << endl;
 		cout << "check &(addr)" << endl;
-		left = checkAddr(left);
+		left = checkAddr(left, lvalue);
 		lvalue = false;
 		return left;
 
@@ -524,18 +525,20 @@ static Type prefixExpression(bool &lvalue)
 		match(SIZEOF);
 		Type left = prefixExpression(lvalue);
 		cout << "check sizeof" << endl;
-		left = checkSizeOf(left, name);
+		left = checkSizeOf(left, "sizeof");
 		lvalue = false;
 		return left;
 
 	} else if (lookahead == '(' && isSpecifier(peek())) {
 		match('(');
-		specifier();
+		int typespec = specifier();
 		decl(decls, name, ABSTRACT_DECL);
 		match(')');
 		Type left = prefixExpression(lvalue);
+		cout << "before cast: " << left << endl;
 		cout << "check cast" << endl;
-		left = checkCast(left);
+		Type castAs(typespec, decls);
+		left = checkCast(castAs);
 		lvalue = false;
 		return left;
 
@@ -565,21 +568,21 @@ static Type multiplicativeExpression(bool &lvalue)
 			match('*');
 			Type right = prefixExpression(lvalue);
 			cout << "check *" << endl;
-			right = checkMultiplicativeExpression(left, right, "*");
+			left = checkMultiplicativeExpression(left, right, "*");
 			lvalue = false;
 
 		} else if (lookahead == '/') {
 			match('/');
 			Type right = prefixExpression(lvalue);
 			cout << "check /" << endl;
-			right = checkMultiplicativeExpression(left, right, "/");
+			left = checkMultiplicativeExpression(left, right, "/");
 			lvalue = false;
 
 		} else if (lookahead == '%') {
 			match('%');
 			Type right = prefixExpression(lvalue);
 			cout << "check %" << endl;
-			right = checkMultiplicativeExpression(left, right, "%");
+			left = checkMultiplicativeExpression(left, right, "%");
 			lvalue = false;
 
 		} else
@@ -610,14 +613,14 @@ static Type additiveExpression(bool &lvalue)
 			match('+');
 			Type right = multiplicativeExpression(lvalue);
 			cout << "check +" << endl;
-			right = checkAdd(left, right, "+");
+			left = checkAdd(left, right, "+");
 			lvalue = false;
 
 		} else if (lookahead == '-') {
 			match('-');
 			Type right = multiplicativeExpression(lvalue);
 			cout << "check -" << endl;
-			right = checkSub(left, right, "-");
+			left = checkSub(left, right, "-");
 			lvalue = false;
 
 		} else
@@ -652,28 +655,28 @@ static Type relationalExpression(bool &lvalue)
 			match('<');
 			Type right = additiveExpression(lvalue);
 			cout << "check <" << endl;
-			right = checkEqualityandRelational(left, right, "<");
+			left = checkEqualityandRelational(left, right, "<");
 			lvalue = false;
 
 		} else if (lookahead == '>') {
 			match('>');
 			Type right = additiveExpression(lvalue);
 			cout << "check >" << endl;
-			right = checkEqualityandRelational(left, right, ">");
+			left = checkEqualityandRelational(left, right, ">");
 			lvalue = false;
 
 		} else if (lookahead == LEQ) {
 			match(LEQ);
 			Type right = additiveExpression(lvalue);
 			cout << "check <=" << endl;
-			right = checkEqualityandRelational(left, right, "<=");
+			left = checkEqualityandRelational(left, right, "<=");
 			lvalue = false;
 
 		} else if (lookahead == GEQ) {
 			match(GEQ);
 			Type right = additiveExpression(lvalue);
 			cout << "check >=" << endl;
-			right = checkEqualityandRelational(left, right, ">=");
+			left = checkEqualityandRelational(left, right, ">=");
 			lvalue = false;
 
 		} else
@@ -703,14 +706,14 @@ static Type equalityExpression(bool &lvalue)
 			match(EQL);
 			Type right = relationalExpression(lvalue);
 			cout << "check ==" << endl;
-			right = checkEqualityandRelational(left, right, "==");
+			left = checkEqualityandRelational(left, right, "==");
 			lvalue = false;
 
 		} else if (lookahead == NEQ) {
 			match(NEQ);
 			Type right = relationalExpression(lvalue);
 			cout << "check !=" << endl;
-			right = checkEqualityandRelational(left, right, "!=");
+			left = checkEqualityandRelational(left, right, "!=");
 			lvalue = false;
 
 		} else
@@ -804,11 +807,13 @@ static void statements()
 static Type assignment(bool &lvalue)
 {
 	Type left = expression(lvalue);
-	
+
 	if (lookahead == '=') {
 		match('=');
+		bool leftLvalue = lvalue;
 		Type right = expression(lvalue);
-		checkAssignment(left, right, lvalue);
+		checkAssignment(left, right, leftLvalue);
+		lvalue = true;
 	}
 	return left;
 
@@ -834,8 +839,7 @@ static Type assignment(bool &lvalue)
 
 static void statement()
 {
-	bool lvalue = false;
-	// cout << "line " << lineno << ": breakCounter = " << breakCounter << endl;
+	bool lvalue;
 
 	if (lookahead == '{') {
 		match('{');
@@ -854,7 +858,6 @@ static void statement()
 		match(RETURN);
 		Type right = expression(lvalue);
 		right = checkReturn(returnType, right);
-		// lvalue ???
 		match(';');
 
 	} else if (lookahead == WHILE) {
@@ -922,7 +925,7 @@ static void functionOrGlobal()
 	if (decl(decls, name, FUNCTION_DECL)) {
 		defineFunction(name, Type(typespec, decls));
 		decls.pop_front();
-		// returnType = Type(typespec, decls);
+		returnType = Type(typespec, decls);
 
 		match('{');
 		declarations();

@@ -31,8 +31,8 @@ Type checkEqualityandRelational(const Type &left, const Type &right, const std::
 Type checkAdd(const Type &left, const Type &right, const std::string name);
 Type checkSub(const Type &left, const Type &right, const std::string name);
 
-bool notFunc(const Type &t);
-bool checkTs(const Type &left, const Type &right);
+bool notFunc(Type t);
+bool checkTs(Type left, Type right);
 
 // 2.2.6
 Type checkMultiplicativeExpression(const Type &left, const Type &right, const std::string name);
@@ -41,7 +41,7 @@ Type checkMultiplicativeExpression(const Type &left, const Type &right, const st
 Type checkLogicalNot(const Type &left);
 Type checkNegate(const Type &right, const std::string name);
 Type checkDeref(const Type &right, const std::string name);
-Type checkAddr(const Type &right);
+Type checkAddr(const Type &right, const bool &lvalue);
 Type checkSizeOf(const Type &right, const std::string name);
 Type checkCast(const Type &left);
 
@@ -54,6 +54,6 @@ Type checkFunc(const Type &left, const Types &args);
 Type checkReturn(const Type &left, const Type &right);
 void checkBreak(int counter);
 
-void checkAssignment(const Type& left, const Type &right, bool lvalue);
+void checkAssignment(const Type& left, const Type &right, bool &lvalue);
 
 # endif /* CHECKER_H */
