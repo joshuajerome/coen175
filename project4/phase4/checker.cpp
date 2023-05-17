@@ -85,7 +85,9 @@ Symbol *defineFunction(const string &name, const Type &type)
 {
 	cout << "define " << name << " as " << type << endl;
 
-	checkDecls(type.declarators());
+	if (!checkDecls(type.declarators())) {
+		report(E1, name);
+	}
 	Symbol *symbol = globals->find(name);
 
 	if (symbol == nullptr)
@@ -126,7 +128,9 @@ Symbol *declareSymbol(const string &name, const Type &type)
 {
 	cout << "declare " << name << " as " << type << endl;
 
-	checkDecls(type.declarators());
+	if (!checkDecls(type.declarators())) {
+		report(E1, name);
+	}
 	Symbol *symbol = current->find(name);
 
 	if (symbol == nullptr)
@@ -483,7 +487,7 @@ Type checkReturn(const Type &left, const Type &right)
 
 void checkBreak(int counter)
 {
-	if (counter < 0)
+	if (counter <= 0)
 		report(E2);
 }
 

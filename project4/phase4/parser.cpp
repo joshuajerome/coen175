@@ -25,6 +25,7 @@ static void statement();
 
 static const Type integer(INT);
 static Type returnType(INT);
+static int breakCounter = 0;
 
 enum { PLAIN_DECL, FUNCTION_DECL, ABSTRACT_DECL };
 
@@ -834,20 +835,19 @@ static Type assignment(bool &lvalue)
 static void statement()
 {
 	bool lvalue = false;
-	int breakCounter = 0;
+	// cout << "line " << lineno << ": breakCounter = " << breakCounter << endl;
 
 	if (lookahead == '{') {
 		match('{');
-		breakCounter++;
 		openScope();
 		declarations();
 		statements();
 		closeScope();
 		match('}');
-		breakCounter--;
 
 	} else if (lookahead == BREAK) {
 		match(BREAK);
+		checkBreak(breakCounter);
 		match(';');
 
 	} else if (lookahead == RETURN) {
@@ -859,11 +859,12 @@ static void statement()
 
 	} else if (lookahead == WHILE) {
 		match(WHILE);
-		checkBreak(breakCounter);
 		match('(');
 		expression(lvalue);
 		match(')');
+		breakCounter++;
 		statement();
+		breakCounter--;
 
 	} else if (lookahead == FOR) {
 		match(FOR);
@@ -874,7 +875,9 @@ static void statement()
 		match(';');
 		assignment(lvalue);
 		match(')');
+		breakCounter++;
 		statement();
+		breakCounter--;
 
 	} else if (lookahead == IF) {
 		match(IF);
