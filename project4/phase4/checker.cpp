@@ -451,7 +451,7 @@ Type checkFunc(const Type &left, const Types &args) // assuming Types is already
 	Type left_type = left.promote();
 	// has type pointer to function after promotion
 	Declarators d = left_type.declarators();
-	if (left_type.isPointer() && left.isFunction()) 
+	if (left_type.isPointer() && !notFunc(left_type)) 
 	{
 		d.pop_front(); // pop pointer
 		Declarator func = d.front(); // store function
