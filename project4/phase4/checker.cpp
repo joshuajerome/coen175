@@ -399,20 +399,11 @@ Type checkArray(const Type &left, const Type &right, const string name)
 
 	Type left_type = left.promote(), right_type = right.promote();
 
-	if (left_type.isPointer()) 
+	if (left_type.isPointer() && notFunc(left_type) && right_type == integer) 
 	{
 		Declarators d = left_type.declarators();
 		d.pop_front();
-		if (d.empty()) 
-		{
-			if (right_type == integer)
-				return Type(left_type.specifier(), d);
-		}
-		else
-		{
-			if (d.front().kind() != FUNCTION && right_type == integer)
-				return Type(left_type.specifier(), d);
-		}
+		return Type(left_type.specifier(), d);
 	}
 	report(E5, name);
 	return error;
