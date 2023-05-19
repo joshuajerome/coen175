@@ -295,6 +295,7 @@ bool checkTs(Type left, Type right)
 {
 	if (!left.isPointer() || !right.isPointer()) return false;
 
+	// size of leftT and rightT must be equal before checking if they match
 	int distanceLeft = std::distance(left.declarators().begin(), left.declarators().end());
 	int distanceRight = std::distance(right.declarators().begin(), right.declarators().end());
 
@@ -310,14 +311,9 @@ bool checkTs(Type left, Type right)
 // 2.26
 Type checkMultiplicativeExpression(const Type &left, const Type &right, const string name)
 {
-
-	if (left == error || right == error)
-	{
-		return error;
-	}
+	if (left == error || right == error) return error;
 
 	Type left_type = left.promote(), right_type = right.promote();
-
 	if ((left_type == integer) && (right_type == integer))
 		return integer;
 
@@ -383,7 +379,7 @@ Type checkSizeOf(const Type &right, const string name)
 	if (!right.isFunction())
 		return integer;
 	report(E6, name);
-	return error; // and is NOT an lvalue
+	return error;
 }
 
 Type checkCast(const Type &left)
@@ -399,7 +395,7 @@ Type checkCast(const Type &left)
 
 	if (checkDecls(left_type.declarators()))
 	{
-		return left_type; // and is not an lvalue
+		return left_type;
 	}
 	report(E7);
 	return error;
@@ -435,9 +431,8 @@ Type checkArray(const Type &left, const Type &right, const string name)
 			if (d.front().kind() != FUNCTION && right_type == integer)
 				return Type(left_type.specifier(), d);
 		}
-		report(E5, name);
-		return error;
 	}
+	report(E5, name);
 	return error;
 }
 
@@ -496,9 +491,8 @@ Type checkReturn(const Type &left, const Type &right)
 {
 	if (left == error || right == error) return error;
 
-	cout << "NEIGHBORS NEIGHBORS NEIGHBORS left = " << left << endl;
-	cout << "NEIGHBORS NEIGHBORS NEIGHBORS right = " << right << endl;
 	Type left_type = left.promote(), right_type = right.promote();
+
 	if (left_type == right_type) {
 		return left_type;
 	}
