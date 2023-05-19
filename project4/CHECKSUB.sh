@@ -19,7 +19,7 @@ rm -rf $WORKDIR && mkdir -m 700 $WORKDIR && mkdir $WORKDIR/examples || die
 
 echo "Checking environment ..."
 hostname -f | grep 'linux.*.engr.scu.edu' >/dev/null ||
-    { echo "Must be run on an ECC Linux system" 1>&2; die; }
+    { echo "Must be run on an ECC Linux system" 1>&2; }
 
 echo "Checking submission ..."
 test -r $1 && test `wc -c < $1` -gt 1000000 \

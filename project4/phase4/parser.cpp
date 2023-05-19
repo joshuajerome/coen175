@@ -382,7 +382,6 @@ static Type primaryExpression(bool &lvalue)
 		match('(');
 		Type left = expression(lvalue);
 		match(')');
-		// lvalue = whether expression is an lvalue
 		return left;
 
 	} else if (lookahead == CHARACTER) {
@@ -855,6 +854,7 @@ static void statement()
 	} else if (lookahead == RETURN) {
 		match(RETURN);
 		Type right = expression(lvalue);
+		cout << "RAGHV RAGHAV RAGHAV " << endl;
 		right = checkReturn(returnType, right);
 		match(';');
 

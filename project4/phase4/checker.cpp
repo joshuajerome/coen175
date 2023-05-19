@@ -283,7 +283,7 @@ Type checkSub(const Type &left, const Type &right, const string name)
 bool notFunc(Type t)
 {
 	int distance = std::distance(t.declarators().begin(), t.declarators().end());
-	if (distance > 1) { // >= ?
+	if (distance > 1) {
 		Declarators tDecls = t.declarators();
 		tDecls.pop_front();
 		return tDecls.front().kind() != FUNCTION;
@@ -366,13 +366,10 @@ Type checkAddr(const Type &right, const bool &lvalue)
 {
 	if (right == error) return error;
 
-	cout << "addr performed on type: " << right << endl;
-
 	if (lvalue)
 	{
 		Declarators d = right.declarators();
 		d.push_front(Pointer());
-		cout << "addr valid" << endl;
 		return Type(right.specifier(), d); // and is NOT an lvalue
 	}
 	report(E4);
@@ -472,7 +469,7 @@ Type checkFunc(const Type &left, const Types &args) // assuming Types is already
 					if (*argsIterator == error) return error;
 					if (funcIterator->promote() != *argsIterator) // num and types of params and args agree
 					{
-						report(E9);
+						report(E9); // type of each arg is different
 						return error;
 					}
 					funcIterator++;
@@ -482,7 +479,7 @@ Type checkFunc(const Type &left, const Types &args) // assuming Types is already
 			}
 			else
 			{
-				report(E9);
+				report(E9); // number of args are not the same
 				return error;
 			}
 		}
@@ -499,6 +496,8 @@ Type checkReturn(const Type &left, const Type &right)
 {
 	if (left == error || right == error) return error;
 
+	cout << "NEIGHBORS NEIGHBORS NEIGHBORS left = " << left << endl;
+	cout << "NEIGHBORS NEIGHBORS NEIGHBORS right = " << right << endl;
 	Type left_type = left.promote(), right_type = right.promote();
 	if (left_type == right_type) {
 		return left_type;
@@ -513,7 +512,7 @@ void checkBreak(int counter)
 		report(E2);
 }
 
-void checkAssignment(const Type& left, const Type &right, bool &lvalue)
+void checkAssignment(const Type& left, const Type &right, const bool &lvalue)
 {
 	if (left == error || right == error) return;
 
@@ -523,14 +522,12 @@ void checkAssignment(const Type& left, const Type &right, bool &lvalue)
 
 		if (left_type != right_type)
 		{
-			lvalue = false;
 			report(E5, "=");
 			return;
 		}
 	}
 	else
 	{
-		lvalue = false;
 		report(E4);
 		return;
 	}

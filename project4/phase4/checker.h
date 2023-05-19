@@ -54,6 +54,6 @@ Type checkFunc(const Type &left, const Types &args);
 Type checkReturn(const Type &left, const Type &right);
 void checkBreak(int counter);
 
-void checkAssignment(const Type& left, const Type &right, bool &lvalue);
+void checkAssignment(const Type& left, const Type &right, const bool &lvalue);
 
 # endif /* CHECKER_H */
