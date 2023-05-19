@@ -438,7 +438,7 @@ Type checkFunc(const Type &left, const Types &args) // assuming Types is already
 		{
 			if (func.parameters()->size() == args.size())
 			{
-				for (int index = 0; index < args.size(); index++) {
+				for (int index = 0; index < int(args.size()); index++) {
 					if (args.at(index) == error) return error;
 					if (func.parameters()->at(index).promote() != args.at(index)) // num and types of params and args agree
 					{
