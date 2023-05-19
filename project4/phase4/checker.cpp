@@ -282,13 +282,9 @@ Type checkSub(const Type &left, const Type &right, const string name)
 
 bool notFunc(Type t)
 {
-	int distance = std::distance(t.declarators().begin(), t.declarators().end());
-	if (distance > 1) {
-		Declarators tDecls = t.declarators();
-		tDecls.pop_front();
-		return tDecls.front().kind() != FUNCTION;
-	}
-	return true;
+	Declarators tDecls = t.declarators();
+	tDecls.pop_front();
+	return tDecls.empty() || (tDecls.front().kind() != FUNCTION);
 }
 
 bool checkTs(Type left, Type right)
