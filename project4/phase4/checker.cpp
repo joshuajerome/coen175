@@ -197,11 +197,8 @@ bool checkDecls(const Declarators &decls)
 // 2.2.3
 Type checkLogicalExpression(const Type &left, const Type &right)
 {
-	if (left == error || right == error)
-	{
-		return error;
-	}
-
+	if (left == error || right == error) return error;
+	
 	Type left_type = left.promote(), right_type = right.promote();
 
 	return integer;
@@ -210,11 +207,8 @@ Type checkLogicalExpression(const Type &left, const Type &right)
 // 2.2.4
 Type checkEqualityandRelational(const Type &left, const Type &right, const string name)
 {
-	if (left == error || right == error)
-	{
-		return error;
-	}
-
+	if (left == error || right == error) return error;
+	
 	Type left_type = left.promote(), right_type = right.promote();
 
 	if (left_type != right_type)
@@ -222,18 +216,13 @@ Type checkEqualityandRelational(const Type &left, const Type &right, const strin
 		report(E5, name);
 		return error;
 	}
-
 	return integer;
 }
 
 // 2.2.5
 Type checkAdd(const Type &left, const Type &right, const string name)
 {
-
-	if (left == error || right == error)
-	{
-		return error;
-	}
+	if (left == error || right == error) return error;
 
 	Type left_type = left.promote(), right_type = right.promote();
 
@@ -243,6 +232,7 @@ Type checkAdd(const Type &left, const Type &right, const string name)
 
 	if (left_type.isPointer() && (right_type == integer) && notFunc(left_type))
 		return left_type;
+
 	if ((left_type == integer) && right_type.isPointer() && notFunc(right_type))
 		return right_type;
 
@@ -252,12 +242,8 @@ Type checkAdd(const Type &left, const Type &right, const string name)
 
 Type checkSub(const Type &left, const Type &right, const string name)
 {
+	if (left == error || right == error) return error;
 
-	if (left == error || right == error)
-	{
-		return error;
-	}
-	
 	Type left_type = left.promote(), right_type = right.promote();
 
 	// both are integer
@@ -280,14 +266,14 @@ Type checkSub(const Type &left, const Type &right, const string name)
 	return error;
 }
 
-bool notFunc(Type t)
+bool notFunc(const Type &t)
 {
 	Declarators tDecls = t.declarators();
 	tDecls.pop_front();
 	return tDecls.empty() || (tDecls.front().kind() != FUNCTION);
 }
 
-bool checkTs(Type left, Type right)
+bool checkTs(const Type &left, const Type &right)
 {
 	if (!left.isPointer() || !right.isPointer()) return false;
 
@@ -299,7 +285,7 @@ bool checkTs(Type left, Type right)
 		Declarators leftDecls = left.declarators(), rightDecls = right.declarators();
 		leftDecls.pop_front();
 		rightDecls.pop_front();
-		return (leftDecls == rightDecls) && (left.specifier() == right.specifier()) ;
+		return (left.specifier() == right.specifier()) && (leftDecls == rightDecls);
 	}
 	return false;
 }
@@ -325,7 +311,7 @@ Type checkLogicalNot(const Type &right)
 	Type right_type = right.promote();
 	if (right_type == integer)
 		return integer;
-	return error; // and is NOT an lvalue
+	return error;
 }
 
 Type checkNegate(const Type &right, const string name)
@@ -336,7 +322,7 @@ Type checkNegate(const Type &right, const string name)
 	if (right_type == integer)
 		return integer;
 	report(E6, name);
-	return error; // and is NOT an lvalue
+	return error;
 }
 
 Type checkDeref(const Type &right, const string name)
@@ -348,7 +334,7 @@ Type checkDeref(const Type &right, const string name)
 	{
 		Declarators d = right_type.declarators();
 		d.pop_front();
-		return Type(right_type.specifier(), d); // and is an lvalue
+		return Type(right_type.specifier(), d);
 	}
 	report(E6, name);
 	return error;
@@ -362,7 +348,7 @@ Type checkAddr(const Type &right, const bool &lvalue)
 	{
 		Declarators d = right.declarators();
 		d.push_front(Pointer());
-		return Type(right.specifier(), d); // and is NOT an lvalue
+		return Type(right.specifier(), d);
 	}
 	report(E4);
 	return error;
@@ -436,9 +422,9 @@ Type checkFunc(const Type &left, const Types &args) // assuming Types is already
 {
 	if (left == error) return error;
 
-	Type left_type = left.promote();
-	// has type pointer to function after promotion
+	Type left_type = left.promote(); // has type pointer to function after promotion
 	Declarators d = left_type.declarators();
+	
 	if (left_type.isPointer() && !notFunc(left_type)) 
 	{
 		d.pop_front(); // pop pointer
@@ -452,21 +438,14 @@ Type checkFunc(const Type &left, const Types &args) // assuming Types is already
 		{
 			if (func.parameters()->size() == args.size())
 			{
-				auto funcIterator = func.parameters()->begin();
-				auto argsIterator = args.begin();
-
-				while (argsIterator != args.end())
-				{
-					if (*argsIterator == error) return error;
-					if (funcIterator->promote() != *argsIterator) // num and types of params and args agree
+				for (int index = 0; index < args.size(); index++) {
+					if (args.at(index) == error) return error;
+					if (func.parameters()->at(index).promote() != args.at(index)) // num and types of params and args agree
 					{
 						report(E9); // type of each arg is different
 						return error;
 					}
-					funcIterator++;
-					argsIterator++;
 				}
-
 			}
 			else
 			{

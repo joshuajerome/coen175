@@ -31,8 +31,8 @@ Type checkEqualityandRelational(const Type &left, const Type &right, const std::
 Type checkAdd(const Type &left, const Type &right, const std::string name);
 Type checkSub(const Type &left, const Type &right, const std::string name);
 
-bool notFunc(Type t);
-bool checkTs(Type left, Type right);
+bool notFunc(const Type &t);
+bool checkTs(const Type &left, const Type &right);
 
 // 2.2.6
 Type checkMultiplicativeExpression(const Type &left, const Type &right, const std::string name);
