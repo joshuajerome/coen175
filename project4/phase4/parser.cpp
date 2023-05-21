@@ -39,7 +39,7 @@ enum { PLAIN_DECL, FUNCTION_DECL, ABSTRACT_DECL };
 static void error()
 {
 	if (lookahead == DONE)
-		report("syntax error at end of file", "");
+		report("syntax error at end of file");
 	else
 		report("syntax error at '%s'", lexbuf);
 
@@ -491,7 +491,7 @@ static Type prefixExpression(bool &lvalue)
 		match('!');
 		Type left = prefixExpression(lvalue);
 		cout << "check !" << endl;
-		left = checkLogicalNot(left);
+		left = checkLogicalNot(left,"!");
 		lvalue = false;
 		return left;
 
@@ -854,7 +854,6 @@ static void statement()
 	} else if (lookahead == RETURN) {
 		match(RETURN);
 		Type right = expression(lvalue);
-		cout << "RAGHV RAGHAV RAGHAV " << endl;
 		right = checkReturn(returnType, right);
 		match(';');
 

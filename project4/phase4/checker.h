@@ -38,7 +38,7 @@ bool checkTs(const Type &left, const Type &right);
 Type checkMultiplicativeExpression(const Type &left, const Type &right, const std::string name);
 
 // 2.2.7
-Type checkLogicalNot(const Type &left);
+Type checkLogicalNot(const Type &left, const std::string name);
 Type checkNegate(const Type &right, const std::string name);
 Type checkDeref(const Type &right, const std::string name);
 Type checkAddr(const Type &right, const bool &lvalue);

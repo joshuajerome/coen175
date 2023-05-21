@@ -304,13 +304,15 @@ Type checkMultiplicativeExpression(const Type &left, const Type &right, const st
 }
 
 // 2.2.7
-Type checkLogicalNot(const Type &right)
+Type checkLogicalNot(const Type &right, const string name)
 {
 	if (right == error) return error;
 
 	Type right_type = right.promote();
+
 	if (right_type == integer)
 		return integer;
+	
 	return error;
 }
 
@@ -319,8 +321,10 @@ Type checkNegate(const Type &right, const string name)
 	if (right == error) return error;
 
 	Type right_type = right.promote();
+	
 	if (right_type == integer)
 		return integer;
+	
 	report(E6, name);
 	return error;
 }
