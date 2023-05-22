@@ -29,7 +29,7 @@ echo "Extracting submission ..."
 tar -C $WORKDIR -xf $1 || die
 
 echo "Compiling project ..."
-(cd $WORKDIR && cd phase4 && rm -f *.o scc core && make) || die
+(cd $WORKDIR && cd phase5 && rm -f *.o scc core && make) || die
 
 echo "Extracting examples ..."
 tar -C $WORKDIR -xf $2 || die
@@ -40,7 +40,7 @@ exec 3> CHECKSUB.diff
 (cd $WORKDIR/examples && for FILE in *.c; do
     echo -n "$FILE ... "
     echo "$FILE ..." 1>&3
-    (ulimit -t 1; ../phase4/scc) < $FILE 2>&1 >/dev/null |
+    (ulimit -t 1; ../phase5/scc) < $FILE 2>&1 >/dev/null |
 	cmp - `basename $FILE .c`.err 1>&3 2>/dev/null && echo ok || echo failed
 done)
 
