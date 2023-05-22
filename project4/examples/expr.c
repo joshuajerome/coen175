@@ -7,7 +7,7 @@ int foo(int x, int *y)
 
 
     p = &d;			/* invalid operands to binary = */
-    a = p;			/* lvalue required in expression */
+    a = p;          /* lvalue required in expression */
     p = (int *) &d;
     p = &a[0];
     p = &i;

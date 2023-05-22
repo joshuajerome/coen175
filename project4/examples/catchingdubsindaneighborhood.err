@@ -1,0 +1,19 @@
+line 8: break statement not within loop
+line 22: break statement not within loop
+line 23: invalid return type
+line 28: redeclaration of 'g'
+line 33: invalid operands to binary ==
+line 34: invalid operands to binary !=
+line 35: invalid operands to binary <=
+line 36: invalid operands to binary >=
+line 37: invalid operands to binary <
+line 38: invalid operands to binary >
+line 40: invalid operands to binary +
+line 41: invalid operands to binary -
+line 43: invalid operands to binary *
+line 44: invalid operands to binary /
+line 45: invalid operands to binary %
+line 48: invalid operand to unary -
+line 49: invalid operand to unary *
+line 50: lvalue required in expression
+line 51: invalid operand to unary sizeof
