@@ -91,7 +91,7 @@ public:
 
     Type promote() const;
     Type dereference() const;
-    unsigned size() const { return 4; /* fill this in later */ }
+    unsigned size() const;
 };
 
 std::ostream &operator <<(std::ostream &ostr, const Type &type);

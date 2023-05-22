@@ -72,6 +72,7 @@ public:
     bool lvalue() const;
 
     virtual bool isNumber(unsigned &value) const;
+    virtual void operand(ostream &ostr) const;
 };
 
 
@@ -113,7 +114,9 @@ class Identifier : public Expression {
 public:
     Identifier(const Symbol *symbol);
     const Symbol *symbol() const;
+    
     virtual void write(ostream &ostr) const;
+    virtual void operand(ostream &ostr) const;
 };
 
 
@@ -126,8 +129,10 @@ public:
     Number(unsigned value);
     Number(const string &value);
     const string &value() const;
+
     virtual void write(ostream &ostr) const;
     virtual bool isNumber(unsigned &value) const;
+    virtual void operand(ostream &ostr) const;
 };
 
 
@@ -140,6 +145,7 @@ class Call : public Expression {
 public:
     Call(Expression *expr, const Expressions &args, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -313,6 +319,7 @@ class Assignment : public Statement {
 public:
     Assignment(Expression *left, Expression *right);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -346,6 +353,7 @@ public:
     Block(Scope *decls, const Statements &stmts);
     Scope *declarations() const;
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -395,6 +403,7 @@ class Simple : public Statement {
 public:
     Simple(Expression *expr);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -407,6 +416,7 @@ class Procedure : public Node {
 public:
     Procedure(const Symbol *id, Block *body);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 # endif /* TREE_H */

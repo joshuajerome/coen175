@@ -104,7 +104,8 @@
         "source_location": "cpp",
         "latch": "cpp",
         "semaphore": "cpp",
-        "syncstream": "cpp"
+        "syncstream": "cpp",
+        "cassert": "cpp"
     },
     "git-blame.gitWebUrl": ""
 }

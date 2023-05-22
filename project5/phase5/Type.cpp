@@ -343,3 +343,25 @@ ostream &operator <<(ostream &ostr, const Type &type)
 
     return ostr;
 }
+
+unsigned Type::size() const {
+
+    if (*this == Type(INT))
+        return 4;
+    
+    if (*this == Type(CHAR))
+        return 1;
+
+    if (isPointer())
+        return 4;
+
+    if (isArray())
+    {
+        Declarators decls(this->declarators());
+        int length = this->declarators().front().length();
+        decls.pop_front();
+        return Type(specifier(), decls).size() * length;
+    }
+    return 0;
+}
+
