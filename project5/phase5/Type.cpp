@@ -360,7 +360,7 @@ unsigned Type::size() const {
         Declarators decls(this->declarators());
         int length = decls.front().length();
         decls.pop_front();
-        return Type(specifier(), decls).size() * length;
+        return Type(this->specifier(), decls).size() * length;
     }
     return 0;
 }
