@@ -73,7 +73,7 @@ void Procedure::generate() {
             symbol->_offset = 8 + 4 * i;
         }
     }
-    cout << _id->name() << ":";
+    cout << _id->name() << ":" << endl;
     
     cout << "\tpushl\t%ebp" << endl;
     cout << "\tmovl\t%esp, %ebp" << endl;
@@ -83,9 +83,9 @@ void Procedure::generate() {
 
     cout << "\tmovl\t%ebp, %esp" << endl;
     cout << "\tpopl\t%ebp" << endl;
-    cout << "\tret\t" << endl;
+    cout << "\tretl\t" << endl;
 
-    cout << ".globl " << _id->name() << endl;
+    cout << ".globl\t" << _id->name() << endl;
 }
 
 void Assignment::generate() {
@@ -93,10 +93,11 @@ void Assignment::generate() {
 }
 
 void Call::generate() {
-    for (int i = _args.size() - 1; i >= 0; i--)
+    for (int i = _args.size() - 1; i > 0; i--)
     {
         cout << "\tpushl\t" << _args.at(i) << endl;
     }
+    cout << "\tpushl\t" << _args.at(0) << endl;
     cout << "\tcall\t" << _expr << endl;
 }  
 
