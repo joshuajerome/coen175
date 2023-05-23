@@ -3,6 +3,7 @@
 
 # include "Tree.h"
 # include "Symbol.h"
+# include "Scope.h"
 
 void generateGlobals(Scope *scope);
 

@@ -31,7 +31,7 @@ void Expression::operand(ostream &ostr) const
 
 void Number::operand(ostream &ostr) const
 {
-    ostr << "$" << value();
+    ostr << "$" << _value;
 }
 
 void Identifier::operand(ostream &ostr) const
@@ -50,7 +50,7 @@ void generateGlobals(Scope *scope)
 {
     for (auto it : scope->symbols())
     {
-        if (it->type().isFunction())
+        if (!it->type().isFunction())
         {
             cout << "\t.comm\t" << it->name() << ", " << it->type().size() << endl;
         }
@@ -77,7 +77,7 @@ void Procedure::generate() {
     
     cout << "\tpushl\t%ebp" << endl;
     cout << "\tmovl\t%esp, %ebp" << endl;
-    cout << "\tsubl\t$" << -offsetCounter << ",%esp" << endl;
+    cout << "\tsubl\t$" << -offsetCounter << ", %esp" << endl;
 
     _body->generate();
 
