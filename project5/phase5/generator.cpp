@@ -26,7 +26,7 @@ static ostream &operator<<(ostream &ostr, Expression *expr)
 
 void Expression::operand(ostream &ostr) const
 {
-    
+	return;    
 }
 
 void Number::operand(ostream &ostr) const
@@ -42,7 +42,7 @@ void Identifier::operand(ostream &ostr) const
     }
     else
     {
-        ostr << _symbol->_offset << "(%ebp)" << endl;
+        ostr << _symbol->_offset << "(%ebp)";
     }
 }
 
@@ -85,7 +85,7 @@ void Procedure::generate() {
     cout << "\tpopl\t%ebp" << endl;
     cout << "\tretl\t" << endl;
 
-    cout << ".globl\t" << _id->name() << endl;
+    cout << "\t.globl\t" << _id->name() << endl;
 }
 
 void Assignment::generate() {
@@ -93,11 +93,10 @@ void Assignment::generate() {
 }
 
 void Call::generate() {
-    for (int i = _args.size() - 1; i > 0; i--)
+    for (int i = _args.size() - 1; i >= 0; i--)
     {
         cout << "\tpushl\t" << _args.at(i) << endl;
     }
-    cout << "\tpushl\t" << _args.at(0) << endl;
     cout << "\tcall\t" << _expr << endl;
 }  
 

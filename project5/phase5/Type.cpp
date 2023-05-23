@@ -358,7 +358,7 @@ unsigned Type::size() const {
     if (isArray())
     {
         Declarators decls(this->declarators());
-        int length = this->declarators().front().length();
+        int length = decls.front().length();
         decls.pop_front();
         return Type(specifier(), decls).size() * length;
     }
