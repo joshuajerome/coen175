@@ -77,7 +77,7 @@ void Procedure::generate() {
     
     cout << "\tpushl\t%ebp" << endl;
     cout << "\tmovl\t%esp, %ebp" << endl;
-    cout << "\tsubl\t$" << (-1 * offsetCounter) << ",%esp" << endl;
+    cout << "\tsubl\t$" << -offsetCounter << ",%esp" << endl;
 
     _body->generate();
 
