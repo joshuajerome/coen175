@@ -939,7 +939,7 @@ static void functionOrGlobal()
 	match('}');
 
 	if (numerrors == 0)
-	    proc->write(cout);
+	    proc->generate();
 
     } else {
 	declareSymbol(name, Type(typespec, decls));
@@ -969,6 +969,6 @@ int main()
     while (lookahead != DONE)
 	functionOrGlobal();
 
-    closeScope();
+    generateGlobals(closeScope());
     exit(EXIT_SUCCESS);
 }
