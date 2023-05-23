@@ -83,7 +83,7 @@ void Procedure::generate() {
 
     cout << "\tmovl\t%ebp, %esp" << endl;
     cout << "\tpopl\t%ebp" << endl;
-    cout << "\tretl\t" << endl;
+    cout << "\tret\t" << endl;
 
     cout << "\t.globl\t" << _id->name() << endl;
 }

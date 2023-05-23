@@ -38,11 +38,16 @@ echo "Running examples ..."
 exec 3> CHECKSUB.diff
 
 (cd $WORKDIR/examples && for FILE in *.c; do
+    if echo $FILE | grep -v -- - >/dev/null; then
     echo -n "$FILE ... "
     echo "$FILE ..." 1>&3
-    (ulimit -t 1; ../phase5/scc) < $FILE 2>&1 >/dev/null |
-	cmp - `basename $FILE .c`.err 1>&3 2>/dev/null && echo ok || echo failed
+    BASE=`basename $FILE .c`
+    (ulimit -t 1; ../phase5/scc) < $FILE 2>/dev/null > $BASE.s &&
+	gcc -m32 $BASE.s `test -f $BASE-lib.c && echo $BASE-lib.c` && ./a.out |
+	cmp - `basename $FILE .c`.out 1>&3 2>/dev/null && echo ok || echo failed
+    fi
 done)
 
 rm -rf $WORKDIR
 exit 0
+
