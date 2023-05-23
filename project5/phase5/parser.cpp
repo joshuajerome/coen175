@@ -12,6 +12,7 @@
 # include "string.h"
 # include "tokens.h"
 # include "lexer.h"
+# include "generator.h"
 
 using namespace std;
 
