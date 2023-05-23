@@ -60,12 +60,12 @@ void generateGlobals(Scope *scope)
 void Procedure::generate() {
     
     int offsetCounter = 0;
-    for (int i = 0; i < int(_body->declarations()->symbols().size()); i++)
+    for (unsigned i = 0; i < _body->declarations()->symbols().size(); i++)
     {
         Symbol *symbol = _body->declarations()->symbols()[i];
-        if (i >= int(_id->type().parameters()->size()))
+        if (i >= _id->type().parameters()->size())
         {
-            offsetCounter -= symbol->_offset;
+            offsetCounter -= symbol->type().size();
             symbol->_offset = offsetCounter;
         }
         else
@@ -93,7 +93,7 @@ void Assignment::generate() {
 }
 
 void Call::generate() {
-    for (int i = int(_args.size() - 1); i >= 0; i--)
+    for (int i = _args.size() - 1; i >= 0; i--)
     {
         cout << "\tpushl\t" << _args.at(i) << endl;
     }
