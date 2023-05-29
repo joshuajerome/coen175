@@ -19,7 +19,7 @@ rm -rf $WORKDIR && mkdir -m 700 $WORKDIR && mkdir $WORKDIR/examples || die
 
 echo "Checking environment ..."
 hostname -f | grep 'linux.*.engr.scu.edu' >/dev/null ||
-    { echo "Must be run on an ECC Linux system" 1>&2; }
+    { echo "Must be run on an ECC Linux system" 1>&2; die; }
 
 echo "Checking submission ..."
 test -r $1 && test `wc -c < $1` -gt 1000000 \
@@ -29,7 +29,7 @@ echo "Extracting submission ..."
 tar -C $WORKDIR -xf $1 || die
 
 echo "Compiling project ..."
-(cd $WORKDIR && cd phase5 && rm -f *.o scc core && make) || die
+(cd $WORKDIR && cd phase6 && rm -f *.o scc core && make) || die
 
 echo "Extracting examples ..."
 tar -C $WORKDIR -xf $2 || die
@@ -42,12 +42,11 @@ exec 3> CHECKSUB.diff
     echo -n "$FILE ... "
     echo "$FILE ..." 1>&3
     BASE=`basename $FILE .c`
-    (ulimit -t 1; ../phase5/scc) < $FILE 2>/dev/null > $BASE.s &&
-	gcc -m32 -no-pie $BASE.s `test -f $BASE-lib.c && echo $BASE-lib.c` && ./a.out |
-	cmp - `basename $FILE .c`.out 1>&3 2>/dev/null && echo ok || echo failed
+    (ulimit -t 1; ../phase6/scc) < $FILE 2>/dev/null > $BASE.s &&
+	gcc -m32 $BASE.s && ./a.out < $BASE.in | 
+        cmp - `basename $FILE .c`.out 1>&3 2>/dev/null && echo ok || echo failed
     fi
 done)
 
 rm -rf $WORKDIR
 exit 0
-
