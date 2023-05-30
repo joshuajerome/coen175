@@ -160,6 +160,7 @@ class Not : public Unary {
 public:
     Not(Expression *expr, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -169,6 +170,7 @@ class Negate : public Unary {
 public:
     Negate(Expression *expr, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -206,6 +208,7 @@ class Multiply : public Binary {
 public:
     Multiply(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -215,6 +218,7 @@ class Divide : public Binary {
 public:
     Divide(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -224,6 +228,7 @@ class Remainder : public Binary {
 public:
     Remainder(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -233,6 +238,7 @@ class Add : public Binary {
 public:
     Add(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -242,6 +248,7 @@ class Subtract : public Binary {
 public:
     Subtract(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -251,6 +258,7 @@ class LessThan : public Binary {
 public:
     LessThan(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -260,6 +268,7 @@ class GreaterThan : public Binary {
 public:
     GreaterThan(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -269,6 +278,7 @@ class LessOrEqual : public Binary {
 public:
     LessOrEqual(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -278,6 +288,7 @@ class GreaterOrEqual : public Binary {
 public:
     GreaterOrEqual(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -287,6 +298,7 @@ class Equal : public Binary {
 public:
     Equal(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -296,6 +308,7 @@ class NotEqual : public Binary {
 public:
     NotEqual(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 

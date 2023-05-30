@@ -30,9 +30,59 @@ static vector<Register *> registers = {eax, ecx, edx};
 /* These will be replaced with functions in the next phase.  They are here
    as placeholders so that Call::generate() is finished. */
 
-# define assign(node,reg)
-# define load(node,reg)
 
+void assign(Expression *expr, Register *reg)
+{
+    if (expr != nullptr)
+    {
+        if (expr->_register != nullptr)
+            expr->_register->_node = nullptr;
+        
+        expr->_register = reg;
+    }
+
+    if (reg != nullptr)
+    {
+        if (reg->_node != nullptr)
+            reg->_node->_register = nullptr;
+        
+        reg->_node = expr;
+    }
+}
+
+void load(Expression *expr, Register *reg)
+{
+    if (reg->_node != expr)
+    {
+        if (reg->_node != nullptr)
+        {
+            unsigned n = reg->_node->type().size();
+            offset -=n;
+            reg->_node->_offset = offset;
+            cout << (n == 1 ? "\tmovb\t" : "\tmovl\t");
+            cout << reg << ", " << offset << "(%ebp)" << endl;
+        }
+
+        if (expr != nullptr)
+        {
+            unsigned n = expr->type().size();
+            cout << (n == 1 ? "\tmovb\t" : "\tmovl\t");
+            cout << expr << ", " << reg->name(n) << endl;
+        }
+
+        assign(expr, reg);
+    }
+}
+
+Register *getreg()
+{
+    for (auto reg : registers)
+        if (reg->_node == nullptr)
+            return reg;
+    
+    load(nullptr, registers[0]);
+    return registers[0];
+}
 
 /*
  * Function:	align (private)
@@ -307,10 +357,236 @@ void generateGlobals(Scope *scope)
 
 void Assignment::generate()
 {
-    assert(dynamic_cast<Number *>(_right));
-    assert(dynamic_cast<Identifier *>(_left));
+    _right->generate();
+
+    if (_right->_register == nullptr)
+        load(_right, getreg());
 
     cout << "\tmovl\t" << _right << ", " << _left << endl;
+
+    assign(_right, nullptr);
+    assign(_left, nullptr);
+}
+
+void Add::generate()
+{
+    _left->generate();
+    _right->generate();
+
+    if (_left->_register == nullptr)
+        load(_left, getreg());
+
+    cout << "\taddl\t" << _right << ", " << _left << endl;
+
+    assign(_right, nullptr);
+    assign(this, _left->_register);
+}
+
+void Subtract::generate()
+{
+    _left->generate();
+    _right->generate();
+
+    if (_left->_register == nullptr)
+        load(_left, getreg());
+
+    cout << "\tsubl\t" << _right << ", " << _left << endl;
+
+    assign(_right, nullptr);
+    assign(this, _left->_register);
+}
+
+void Multiply::generate()
+{
+    _left->generate();
+    _right->generate();
+
+    if (_left->_register == nullptr)
+        load(_left, getreg());
+
+    cout << "\timul\t" << _right << ", " << _left << endl;
+
+    assign(_right, nullptr);
+    assign(this, _left->_register);
+}
+
+void Divide::generate()
+{
+    _left->generate();
+    _right->generate();
+
+    load(_left, eax);
+    load(nullptr, edx);
+    load(_right, ecx);
+
+    cout << "\tcltd\t" << endl;
+    cout << "\tidivl\t" << _right << endl;
+
+    assign(_left, nullptr);
+    assign(_right, nullptr);
+
+    assign(this, eax);
+}
+
+void Remainder::generate()
+{
+    _left->generate();
+    _right->generate();
+
+    load(_left, eax);
+    load(nullptr, edx);
+    load(_right, ecx);
+
+    cout << "\tcltd\t" << endl;
+    cout << "\tidivl\t" << _right << endl;
+
+    assign(_left, nullptr);
+    assign(_right, nullptr);
+
+    assign(this, edx);
+}
+
+void LessThan::generate()
+{
+    _left->generate();
+    _right->generate();
+
+    if (_left->_register == nullptr)
+        load(_left, getreg());
+
+    cout << "\tcmpl\t" << _left << ", " << _right << endl;
+
+    assign(_left, nullptr);
+    assign(_right, nullptr);
+
+    assign(this, getreg());
+    
+    cout << "\tsetl\t" << _register->byte() << endl;
+    cout << "\tmovbzl\t" << _register->name() << endl;
+}
+
+void GreaterThan::generate()
+{
+    _left->generate();
+    _right->generate();
+
+    if (_left->_register == nullptr)
+        load(_left, getreg());
+
+    cout << "\tcmpl\t" << _left << ", " << _right << endl;
+
+    assign(_left, nullptr);
+    assign(_right, nullptr);
+
+    assign(this, getreg());
+    
+    cout << "\tsetg\t" << _register->byte() << endl;
+    cout << "\tmovbzl\t" << _register->name() << endl;
+}
+
+void LessOrEqual::generate()
+{
+    _left->generate();
+    _right->generate();
+
+    if (_left->_register == nullptr)
+        load(_left, getreg());
+
+    cout << "\tcmpl\t" << _left << ", " << _right << endl;
+
+    assign(_left, nullptr);
+    assign(_right, nullptr);
+
+    assign(this, getreg());
+    
+    cout << "\tsetle\t" << _register->byte() << endl;
+    cout << "\tmovbzl\t" << _register->name() << endl;
+}
+
+void GreaterOrEqual::generate()
+{
+    _left->generate();
+    _right->generate();
+
+    if (_left->_register == nullptr)
+        load(_left, getreg());
+
+    cout << "\tcmpl\t" << _left << ", " << _right << endl;
+
+    assign(_left, nullptr);
+    assign(_right, nullptr);
+
+    assign(this, getreg());
+    
+    cout << "\tsetge\t" << _register->byte() << endl;
+    cout << "\tmovbzl\t" << _register->name() << endl;
+}
+
+void Equal::generate()
+{
+    _left->generate();
+    _right->generate();
+
+    if (_left->_register == nullptr)
+        load(_left, getreg());
+
+    cout << "\tcmpl\t" << _left << ", " << _right << endl;
+
+    assign(_left, nullptr);
+    assign(_right, nullptr);
+
+    assign(this, getreg());
+    
+    cout << "\tsete\t" << _register->byte() << endl;
+    cout << "\tmovbzl\t" << _register->name() << endl;
+}
+
+void NotEqual::generate()
+{
+    _left->generate();
+    _right->generate();
+
+    if (_left->_register == nullptr)
+        load(_left, getreg());
+
+    cout << "\tcmpl\t" << _left << ", " << _right << endl;
+
+    assign(_left, nullptr);
+    assign(_right, nullptr);
+
+    assign(this, getreg());
+    
+    cout << "\tsetne\t" << _register->byte() << endl;
+    cout << "\tmovbzl\t" << _register << endl;
+}
+
+void Not::generate()
+{
+    _expr->generate();
+
+    if (_expr->_register == nullptr)
+        load(_expr, getreg());
+
+    cout << "\tcmpl\t" << "$0, " << _expr << endl;
+
+    assign (_expr, nullptr);
+    assign(this, getreg());
+
+    cout << "\tsete\t" << _register->byte() << endl;
+    cout << "\tmovzbl\t" << _register->byte() << ", " << _register << endl;
+}
+
+void Negate::generate()
+{
+    _expr->generate();
+
+    if (_expr->_register == nullptr)
+        load(_expr, getreg());
+
+    cout << "\tnegl\t" << _expr << endl;
+
+    assign (_expr, nullptr);
+    assign(this, getreg());
 }
 
 
