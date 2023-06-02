@@ -84,6 +84,12 @@ Register *getreg()
     return registers[0];
 }
 
+void load(Expression *expr)
+{
+    if (expr->_register == nullptr)
+        load(expr, getreg());
+}
+
 /*
  * Function:	align (private)
  *
@@ -373,8 +379,7 @@ void Add::generate()
     _left->generate();
     _right->generate();
 
-    if (_left->_register == nullptr)
-        load(_left, getreg());
+    load(_left);
 
     cout << "\taddl\t" << _right << ", " << _left << endl;
 
@@ -387,8 +392,7 @@ void Subtract::generate()
     _left->generate();
     _right->generate();
 
-    if (_left->_register == nullptr)
-        load(_left, getreg());
+    load(_left);
 
     cout << "\tsubl\t" << _right << ", " << _left << endl;
 
@@ -401,8 +405,7 @@ void Multiply::generate()
     _left->generate();
     _right->generate();
 
-    if (_left->_register == nullptr)
-        load(_left, getreg());
+    load(_left);
 
     cout << "\timul\t" << _right << ", " << _left << endl;
 
@@ -451,8 +454,7 @@ void LessThan::generate()
     _left->generate();
     _right->generate();
 
-    if (_left->_register == nullptr)
-        load(_left, getreg());
+    load(_left);
 
     cout << "\tcmpl\t" << _left << ", " << _right << endl;
 
@@ -470,8 +472,7 @@ void GreaterThan::generate()
     _left->generate();
     _right->generate();
 
-    if (_left->_register == nullptr)
-        load(_left, getreg());
+    load(_left);
 
     cout << "\tcmpl\t" << _left << ", " << _right << endl;
 
@@ -489,8 +490,7 @@ void LessOrEqual::generate()
     _left->generate();
     _right->generate();
 
-    if (_left->_register == nullptr)
-        load(_left, getreg());
+    load(_left);
 
     cout << "\tcmpl\t" << _left << ", " << _right << endl;
 
@@ -508,8 +508,7 @@ void GreaterOrEqual::generate()
     _left->generate();
     _right->generate();
 
-    if (_left->_register == nullptr)
-        load(_left, getreg());
+    load(_left);
 
     cout << "\tcmpl\t" << _left << ", " << _right << endl;
 
@@ -527,8 +526,7 @@ void Equal::generate()
     _left->generate();
     _right->generate();
 
-    if (_left->_register == nullptr)
-        load(_left, getreg());
+    load(_left);
 
     cout << "\tcmpl\t" << _left << ", " << _right << endl;
 
@@ -546,8 +544,7 @@ void NotEqual::generate()
     _left->generate();
     _right->generate();
 
-    if (_left->_register == nullptr)
-        load(_left, getreg());
+    load(_left);
 
     cout << "\tcmpl\t" << _left << ", " << _right << endl;
 
@@ -563,9 +560,7 @@ void NotEqual::generate()
 void Not::generate()
 {
     _expr->generate();
-
-    if (_expr->_register == nullptr)
-        load(_expr, getreg());
+    load(_expr);
 
     cout << "\tcmpl\t" << "$0, " << _expr << endl;
 
@@ -579,9 +574,7 @@ void Not::generate()
 void Negate::generate()
 {
     _expr->generate();
-
-    if (_expr->_register == nullptr)
-        load(_expr, getreg());
+    load(_expr);
 
     cout << "\tnegl\t" << _expr << endl;
 
