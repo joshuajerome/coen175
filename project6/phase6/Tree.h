@@ -87,8 +87,8 @@ public:
 
 class Binary : public Expression {
 public:
-    virtual void generateAddSubMul(string operation);
-    virtual void generateComparison(string operation);
+    virtual void generate(string operation);
+
 protected:
     Expression *_left, *_right;
     Binary(Expression *left, Expression *right, const Type &type);
@@ -101,6 +101,7 @@ class Unary : public Expression {
 protected:
     Expression *_expr;
     Unary(Expression *expr, const Type &type);
+    virtual void generate(string operation);
 };
 
 

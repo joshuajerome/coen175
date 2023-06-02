@@ -365,8 +365,7 @@ void Assignment::generate()
 {
     _right->generate();
 
-    if (_right->_register == nullptr)
-        load(_right, getreg());
+    load(_right);
 
     cout << "\tmovl\t" << _right << ", " << _left << endl;
 
@@ -374,143 +373,111 @@ void Assignment::generate()
     assign(_left, nullptr);
 }
 
-void Binary::generateAddSubMul(string operation)
+void Unary::generate(string operation)
+{
+    _expr->generate();
+    load(_expr);
+
+    /* not */
+    if (operation == "not")
+        cout << "\tcmpl\t" << "$0, " << _expr << endl;
+
+    /* negate */
+    if (operation == "negl")
+        cout << "\t" << operation << "\t" << _expr << endl;
+
+    assign (_expr, nullptr);
+    assign(this, getreg());
+}
+
+void Binary::generate(string operation)
 {
     _left->generate();
     _right->generate();
+
+    /* divide and remainder */
+    if (operation == "idivl")
+    {
+        load(_left, eax);
+        load(nullptr, edx);
+        load(_right, ecx);
+
+        cout << "\tcltd\t" << endl;
+        cout << "\tidivl\t" << _right << endl;
+
+        assign(_left, nullptr);
+        assign(_right, nullptr);
+        return;
+    }
 
     load(_left);
 
-    cout << "\t" << operation << "\t" << _right << ", " << _left << endl;
+    /* addl, subl, and imul */
+    if (operation == "addl" || operation == "subl" || operation == "imul")
+    {
+        cout << "\t" << operation << "\t" << _right << ", " << _left << endl;
 
-    assign(_right, nullptr);
-    assign(this, _left->_register);
+        assign(_right, nullptr);
+        assign(this, _left->_register);
+        return;
+    }
+
+    /* comparison */
+    if (operation == "setl" || operation == "setg" || operation == "setle" || 
+        operation == "setge" || operation == "sete" || operation == "setne")
+    {
+        cout << "\tcmpl\t" << _left << ", " << _right << endl;
+
+        assign(_left, nullptr);
+        assign(_right, nullptr);
+
+        assign(this, getreg());
+        
+        cout << "\t" << operation << "\t" << _register->byte() << endl;
+        cout << "\tmovbzl\t" << _register->name() << endl;
+        return;
+    }
 }
 
-void Add::generate()
-{
-    generateAddSubMul("addl");
-}
+void Add::generate() { Binary::generate("addl"); }
 
-void Subtract::generate()
-{
-    generateAddSubMul("subl");
-}
+void Subtract::generate() { Binary::generate("subl"); }
 
-void Multiply::generate()
-{
-    generateAddSubMul("imul");
-}
+void Multiply::generate() { Binary::generate("imul"); }
 
 void Divide::generate()
 {
-    _left->generate();
-    _right->generate();
-
-    load(_left, eax);
-    load(nullptr, edx);
-    load(_right, ecx);
-
-    cout << "\tcltd\t" << endl;
-    cout << "\tidivl\t" << _right << endl;
-
-    assign(_left, nullptr);
-    assign(_right, nullptr);
-
+    Binary::generate("idivl");
     assign(this, eax);
 }
 
 void Remainder::generate()
 {
-    _left->generate();
-    _right->generate();
-
-    load(_left, eax);
-    load(nullptr, edx);
-    load(_right, ecx);
-
-    cout << "\tcltd\t" << endl;
-    cout << "\tidivl\t" << _right << endl;
-
-    assign(_left, nullptr);
-    assign(_right, nullptr);
-
+    Binary::generate("idivl");
     assign(this, edx);
 }
 
-void Binary::generateComparison(string operation)
-{
-    _left->generate();
-    _right->generate();
+void LessThan::generate() { Binary::generate("setl"); }
 
-    load(_left);
+void GreaterThan::generate() { Binary::generate("setg"); }
 
-    cout << "\tcmpl\t" << _left << ", " << _right << endl;
+void LessOrEqual::generate() { Binary::generate("setle"); }
 
-    assign(_left, nullptr);
-    assign(_right, nullptr);
+void GreaterOrEqual::generate() { Binary::generate("setge"); }
 
-    assign(this, getreg());
-    
-    cout << "\t" << operation << "\t" << _register->byte() << endl;
-    cout << "\tmovbzl\t" << _register->name() << endl;
-}
+void Equal::generate() { Binary::generate("sete"); }
 
-void LessThan::generate()
-{
-    generateComparison("setl");
-}
-
-void GreaterThan::generate()
-{
-    generateComparison("setg");
-}
-
-void LessOrEqual::generate()
-{
-    generateComparison("setle");
-}
-
-void GreaterOrEqual::generate()
-{
-   generateComparison("setge");
-}
-
-void Equal::generate()
-{
-    generateComparison("sete");
-}
-
-void NotEqual::generate()
-{
-    generateComparison("setne");
-}
+void NotEqual::generate() { Binary::generate("setne"); }
 
 void Not::generate()
 {
-    _expr->generate();
-    load(_expr);
-
-    cout << "\tcmpl\t" << "$0, " << _expr << endl;
-
-    assign (_expr, nullptr);
-    assign(this, getreg());
+    Unary::generate("not");
 
     cout << "\tsete\t" << _register->byte() << endl;
     cout << "\tmovzbl\t" << _register->byte() << ", " << _register << endl;
 }
 
-void Negate::generate()
-{
-    _expr->generate();
-    load(_expr);
-
-    cout << "\tnegl\t" << _expr << endl;
-
-    assign (_expr, nullptr);
-    assign(this, getreg());
-}
-
+void Negate::generate() { Unary::generate("negl"); }
 
 /* This is really all the students need to do, and they can even skip the
    loop for stack alignment. */
