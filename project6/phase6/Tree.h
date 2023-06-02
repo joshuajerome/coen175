@@ -86,6 +86,9 @@ public:
 /* A binary operator */
 
 class Binary : public Expression {
+public:
+    virtual void generateAddSubMul(string operation);
+    virtual void generateComparison(string operation);
 protected:
     Expression *_left, *_right;
     Binary(Expression *left, Expression *right, const Type &type);
