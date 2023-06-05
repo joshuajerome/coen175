@@ -110,29 +110,29 @@ foo:
 	idivl	%ecx
 	movl	%edx, z
 	movl	x, %eax
-	cmpl	%eax, y
+	cmpl	y, %eax
 	setl	%al
-	movbzl	%eax
+	movzbl	%al, %eax
 	movl	x, %eax
-	cmpl	%eax, y
+	cmpl	y, %eax
 	setg	%al
-	movbzl	%eax
+	movzbl	%al, %eax
 	movl	x, %eax
-	cmpl	%eax, y
+	cmpl	y, %eax
 	setle	%al
-	movbzl	%eax
+	movzbl	%al, %eax
 	movl	x, %eax
-	cmpl	%eax, y
+	cmpl	y, %eax
 	setge	%al
-	movbzl	%eax
+	movzbl	%al, %eax
 	movl	x, %eax
-	cmpl	%eax, y
+	cmpl	y, %eax
 	sete	%al
-	movbzl	%eax
+	movzbl	%al, %eax
 	movl	x, %eax
-	cmpl	%eax, y
+	cmpl	y, %eax
 	setne	%al
-	movbzl	%eax
+	movzbl	%al, %eax
 	movl	x, %eax
 	cmpl	$0, %eax
 	sete	%al

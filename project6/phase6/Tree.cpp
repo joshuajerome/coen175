@@ -63,7 +63,6 @@ bool Expression::lvalue() const
     return _lvalue;
 }
 
-
 /*
  * Function:	Binary::Binary (constructor)
  *

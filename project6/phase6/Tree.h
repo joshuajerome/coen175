@@ -32,6 +32,7 @@
 # include <ostream>
 # include "Scope.h"
 # include "Register.h"
+# include "Label.h"
 
 typedef std::vector<class Statement *> Statements;
 typedef std::vector<class Expression *> Expressions;
@@ -76,6 +77,8 @@ public:
 
     const Type &type() const;
     bool lvalue() const;
+
+    void test(const Label &label, bool ifTrue);
 
     virtual void operand(ostream &ostr) const;
     virtual bool isNumber(unsigned &value) const;

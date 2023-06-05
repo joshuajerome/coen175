@@ -12,6 +12,7 @@
 # include <iostream>
 # include "generator.h"
 # include "machine.h"
+# include "Label.h"
 # include "Tree.h"
 
 using namespace std;
@@ -426,7 +427,9 @@ void Binary::generate(string operation)
     if (operation == "setl" || operation == "setg" || operation == "setle" || 
         operation == "setge" || operation == "sete" || operation == "setne")
     {
-        cout << "\tcmpl\t" << _left << ", " << _right << endl;
+        load(_left);
+
+        cout << "\tcmpl\t" << _right << ", " << _left << endl;
 
         assign(_left, nullptr);
         assign(_right, nullptr);
@@ -434,7 +437,7 @@ void Binary::generate(string operation)
         assign(this, getreg());
         
         cout << "\t" << operation << "\t" << _register->byte() << endl;
-        cout << "\tmovbzl\t" << _register->name() << endl;
+        cout << "\tmovzbl\t" << _register->byte() << ", " << _register << endl;
         return;
     }
 }
@@ -478,6 +481,21 @@ void Not::generate()
 }
 
 void Negate::generate() { Unary::generate("negl"); }
+
+/* CHECK L21S09 */
+
+// void Expression::test(const Label &label, bool ifTrue)
+// {
+//     generate();
+
+//     if (_register == nullptr)
+//         load(this, getreg());
+
+//     cout << "\tcmpl\t$0, " << this << endl;
+//     cout << (ifTrue ? "\tjne\t" : "\tje\t") << label << endl;
+
+//     assign(this, nullptr);
+// }
 
 /* This is really all the students need to do, and they can even skip the
    loop for stack alignment. */
