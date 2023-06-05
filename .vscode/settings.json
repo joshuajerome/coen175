@@ -105,7 +105,8 @@
         "latch": "cpp",
         "semaphore": "cpp",
         "syncstream": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "stdio.h": "c"
     },
     "git-blame.gitWebUrl": ""
 }

@@ -1,71 +1,142 @@
+int print();
+int printAll();
+int printBool();
+int printError();
+int debug();
+
 int x, y, z;
 
-int foo(void)
+int assignment(void)
 {
-    /* check assignment */
     x = 5;
     y = 5;
     y = x;
     z = y;
+}
 
-    /* check add */
-    x + y;
-    y + z;
-    z + x;
-
+int add(void)
+{
     x = y + z;
     y = x + z;
     z = x + y;
+}
 
-    /* check sub */
-    y - x;
-    z - y;
-    x - z;
-
+int sub(void)
+{
     x = y - z;
     y = x - z;
     z = x - y;
+}
 
-    /* check mul */
-    y * x;
-    z * y;
-    x * z;
+int mul(void)
+{
+    x = x * 2;
+    y = y * 2;
+    z = z * 2;
+}
 
-    x = y * z;
-    y = x * z;
-    z = x * y;
+int div(void)
+{
+    x = x / 2;
+    y = y / 2;
+    z = z / 2;
+}
 
-    /* check div */
-    y / x;
-    z / y;
-    x / z;
-
-    x = y / z;
-    y = x / z;
-    z = x / y;
-
-    /* check rem */
-    y % x;
-    z % y;
-    x % z;
-
+int rem(void)
+{
     x = y % z;
     y = x % z;
     z = x % y;
+}
+
+int relational(int num, int param1, int param2)
+{
+    int result;
+    if (num == 0)
+        result = (param1 == param2);
+    return result;
+
+    /*
+    if (num == 0)
+        result = (param1 < param2);
+    else if (num == 1)
+        result = (param1 > param2);
+    else if (num == 2)
+        result = (param1 <= param2);
+    else if (num == 3)
+        result = (param1 >= param2);
+    else if (num == 4)
+        result = (param1 == param2);
+    else if (num == 5)
+        result = (param1 != param2);
+    else
+        result = -1;
+    
+    return result;
+    */
+}
+
+int not(int param)
+{
+    return !param;
+}
+
+int negate(int param)
+{
+    return -param;
+}
+
+int main(void)
+{
+    int count;
+
+    /* check assignment */
+    assignment();
+    printAll(x, y, z);
+
+    /* check add */
+    add();
+    printAll(x, y, z);
+
+    /* check sub */
+    sub();
+    printAll(x, y, z);
+
+    /* check mul */
+    mul();
+    printAll(x, y, z);
+
+    /* check div */
+    div();
+    printAll(x, y, z);
+
+    /* check rem */
+    rem();
+    printAll(x, y, z);
 
     /* check relational */
-    x < y;
-    x > y;
-    x <= y;
-    x >= y;
-    x == y;
-    x != y;
+    
+    /*
+    for (count = 0; count < 6; count = count + 1)
+    {
+        printError();
+        printBool(relational(count, x, y));
+    }
+    */
+    printBool(relational(0, x, y));
+    printBool(relational(1, x, y));
+    printBool(relational(2, x, y));
+    printBool(relational(3, x, y));
+    printBool(relational(4, x, y));
+    printBool(relational(5, x, y));
 
-    /* check unary */
-    !x;
-    !x;
-    -x;
-    -x;
+    /* check not */
+    print(not(x));
+    print(not(x));
+
+    /* check negate */
+    print(negate(x));
+    print(negate(x));
 
     return 0;
 }
