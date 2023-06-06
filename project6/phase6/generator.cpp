@@ -444,8 +444,8 @@ void Binary::generate(string operation)
 
     load(_left);
 
-    /* addl, subl, and imul */
-    if (operation == "addl" || operation == "subl" || operation == "imul")
+    /* addl, subl, and imull */
+    if (operation == "addl" || operation == "subl" || operation == "imull")
     {
         cout << "\t" << operation << "\t" << _right << ", " << _left << endl;
 
@@ -477,7 +477,7 @@ void Add::generate() { Binary::generate("addl"); }
 
 void Subtract::generate() { Binary::generate("subl"); }
 
-void Multiply::generate() { Binary::generate("imul"); }
+void Multiply::generate() { Binary::generate("imull"); }
 
 void Divide::generate()
 {
