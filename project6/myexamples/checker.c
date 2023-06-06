@@ -52,11 +52,7 @@ int rem(void)
 int relational(int num, int param1, int param2)
 {
     int result;
-    if (num == 0)
-        result = (param1 == param2);
-    return result;
-
-    /*
+    
     if (num == 0)
         result = (param1 < param2);
     else if (num == 1)
@@ -71,9 +67,10 @@ int relational(int num, int param1, int param2)
         result = (param1 != param2);
     else
         result = -1;
+
+    /* print(result); */
     
     return result;
-    */
 }
 
 int not(int param)
@@ -115,20 +112,10 @@ int main(void)
     printAll(x, y, z);
 
     /* check relational */
-    
-    /*
     for (count = 0; count < 6; count = count + 1)
     {
-        printError();
         printBool(relational(count, x, y));
     }
-    */
-    printBool(relational(0, x, y));
-    printBool(relational(1, x, y));
-    printBool(relational(2, x, y));
-    printBool(relational(3, x, y));
-    printBool(relational(4, x, y));
-    printBool(relational(5, x, y));
 
     /* check not */
     print(not(x));

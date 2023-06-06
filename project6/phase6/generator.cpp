@@ -12,8 +12,10 @@
 # include <iostream>
 # include "generator.h"
 # include "machine.h"
-# include "Label.h"
 # include "Tree.h"
+# include "string.h"
+# include <stack>
+# include <map>
 
 using namespace std;
 
@@ -27,6 +29,8 @@ static Register *edx = new Register("%edx", "%dl");
 
 static vector<Register *> registers = {eax, ecx, edx};
 
+static stack<Label> breakLabels;
+static map<string, Label> strings;
 
 /* These will be replaced with functions in the next phase.  They are here
    as placeholders so that Call::generate() is finished. */
@@ -135,7 +139,6 @@ void Expression::operand(ostream &ostr) const
     assert(_offset != 0);
     ostr << _offset << "(%ebp)";
 }
-
 
 /*
  * Function:	Identifier::operand
@@ -349,6 +352,14 @@ void generateGlobals(Scope *scope)
 	    cout << "\t.comm\t" << global_prefix << symbol->name() << ", ";
 	    cout << symbol->type().size() << endl;
 	}
+
+    cout << "\t.data\t" << endl;
+    map<string, Label>::iterator it = strings.begin();
+    while (it != strings.end())
+    {
+        cout << it->second << ":\t.asciz\t" << "\"" << escapeString(it->first) << "\"" << endl;
+        it++;
+    }
 }
 
 
@@ -364,14 +375,34 @@ void generateGlobals(Scope *scope)
 
 void Assignment::generate()
 {
+    Expression *pointer;
+
     _right->generate();
 
-    load(_right);
+    if(_left->isDereference(pointer))
+    {
+        pointer->generate();
 
-    cout << "\tmovl\t" << _right << ", " << _left << endl;
+        load(pointer);
+        load(_right);
+        
+        if (_left->type().size() == 1)
+            cout << "\tmovb\t" << _right << ", (" << pointer << ")" << endl;
+        else
+            cout << "\tmovl\t" << _right << ", (" << pointer << ")" << endl;
 
-    assign(_right, nullptr);
-    assign(_left, nullptr);
+        assign(_right, nullptr);
+        assign(pointer, nullptr);
+    }
+    else
+    {
+        load(_right);
+
+        cout << "\tmovl\t" << _right << ", " << _left << endl;
+
+        assign(_right, nullptr);
+        assign(_left, nullptr);
+    }
 }
 
 void Unary::generate(string operation)
@@ -484,18 +515,181 @@ void Negate::generate() { Unary::generate("negl"); }
 
 /* CHECK L21S09 */
 
-// void Expression::test(const Label &label, bool ifTrue)
-// {
-//     generate();
+void Expression::test(const Label &label, bool ifTrue)
+{
+    generate();
 
-//     if (_register == nullptr)
-//         load(this, getreg());
+    load(this);
 
-//     cout << "\tcmpl\t$0, " << this << endl;
-//     cout << (ifTrue ? "\tjne\t" : "\tje\t") << label << endl;
+    cout << "\tcmpl\t$0, " << this << endl;
+    cout << (ifTrue ? "\tjne\t" : "\tje\t") << label << endl;
 
-//     assign(this, nullptr);
-// }
+    assign(this, nullptr);
+}
+
+void Break::generate()
+{
+    cout << "\tjmp\t" << breakLabels.top() << endl;
+}
+
+void While::generate()
+{
+    Label loop, exit;
+    breakLabels.push(exit);
+    
+    cout << loop << ":" << endl;
+
+    _expr->test(exit, false);
+    _stmt->generate();
+
+    cout << "\tjmp\t" << loop << endl;
+    cout << exit << ":" << endl;
+    breakLabels.pop();
+}
+
+void For::generate()
+{
+    Label loop, exit;
+
+    breakLabels.push(exit);
+
+    _init->generate();
+
+    cout << loop << ":" << endl;
+
+    _expr->test(exit, false);
+    _stmt->generate();
+    _incr->generate();
+
+    cout << "\tjmp\t" << loop << endl;
+    cout << exit << ":" << endl;
+    breakLabels.pop();
+}
+
+void Address::generate()
+{
+    Expression *pointer;
+
+    if(_expr->isDereference(pointer))
+    {
+        pointer->generate();
+
+        if(pointer->_register == nullptr)
+            load(pointer, getreg());
+
+        assign(this, pointer->_register);
+    }
+    else
+    {
+        assign(this, getreg());
+        cout << "\tleal\t" << _expr << ", " << this << endl;
+    }
+}
+
+void Dereference::generate()
+{
+    _expr->generate();
+
+    if(_expr->_register == nullptr)
+        load(_expr, getreg());
+
+    if (this->type().size() == 1)
+        cout << "\tmovb\t(" << _expr << "), " << _expr << endl;
+    else
+        cout << "\tmovl\t(" << _expr << "), " << _expr << endl;
+
+    assign(this, _expr->_register);
+}
+
+void Return::generate()
+{
+    _expr->generate();
+    load(_expr, eax);
+
+    cout << "\tjmp\t" << funcname << ".exit" << endl;
+
+    assign(_expr, nullptr);
+}
+
+void String::operand(ostream &ostr) const
+{
+    if (strings.count(_value) == 0)
+    {
+        Label label = Label();
+        strings[_value] = label;
+    }
+    ostr << strings[_value];
+}
+
+void Cast::generate()
+{
+    _expr->generate();
+
+    if(_expr->_register == nullptr)
+        load(_expr, getreg());
+
+    if (this->type().size() > _expr->type().size())
+    {
+        assert(_expr->type().size() == 1 && this->type().size() == 4);
+        cout << "\tmovsbl\t" << _expr->_register->byte() << ", " << _expr->_register->name(4) << endl;
+    }
+
+    assign(this, _expr->_register);
+}
+
+void If::generate()
+{
+    Label skip, exit;
+
+    _expr->test(skip, false);
+    _thenStmt->generate();
+
+    cout << "\tjmp\t" << exit << endl;
+    cout << skip << ":" << endl;
+
+    if (_elseStmt != nullptr)
+    {
+        _elseStmt->generate();
+    }
+    cout << exit << ":" << endl;
+}
+
+void LogicalAnd::generate()
+{
+    Label skip, exit;
+
+    _left->test(exit, false);
+    _right->test(exit, false);
+
+    assign(this, getreg());
+
+    cout << "\tmovl\t$1, " << this->_register << endl;
+    cout << "\tjmp\t" << exit << endl;
+
+    cout << skip << ":" << endl;
+    cout << "\tmovl\t$0, " << this->_register << endl;
+
+    cout << exit << ":" << endl;
+}
+
+void LogicalOr::generate()
+{
+    Label skip, exit, exitFinal;
+
+    _left->test(skip, true);
+    _right->test(exit, false);
+
+    assign(this, getreg());
+
+    cout << skip << ":" << endl;
+    cout << "\tmovl\t$1, " << this->_register << endl;
+    cout << "\tjmp\t" << exitFinal << endl;
+
+    cout << exit << ":" << endl;
+    cout << "\tmovl\t$0, " << this->_register << endl;
+
+    cout << exitFinal << ":" << endl;
+}
 
 /* This is really all the students need to do, and they can even skip the
    loop for stack alignment. */

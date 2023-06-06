@@ -117,6 +117,7 @@ public:
     String(const string &value);
     const string &value() const;
     virtual void write(ostream &ostr) const;
+    virtual void operand(ostream &ostr) const;
 };
 
 
@@ -188,6 +189,7 @@ public:
     Dereference(Expression *expr, const Type &type);
     virtual void write(ostream &ostr) const;
     virtual bool isDereference(Expression *&pointer) const;
+    virtual void generate();
 };
 
 
@@ -197,6 +199,7 @@ class Address : public Unary {
 public:
     Address(Expression *expr, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -206,6 +209,7 @@ class Cast : public Unary {
 public:
     Cast(Expression *expr, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -325,6 +329,7 @@ class LogicalAnd: public Binary {
 public:
     LogicalAnd(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -334,6 +339,7 @@ class LogicalOr : public Binary {
 public:
     LogicalOr(Expression *left, Expression *right, const Type &type);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -355,6 +361,7 @@ class Break : public Statement {
 public:
     Break();
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -366,6 +373,7 @@ class Return : public Statement {
 public:
     Return(Expression *expr);
     virtual void write(ostream &ostr) const;
+    virtual void generate();
 };
 
 
@@ -394,6 +402,7 @@ public:
     While(Expression *expr, Statement *stmt);
     virtual void write(ostream &ostr) const;
     virtual void allocate(int &offset) const;
+    virtual void generate();
 };
 
 
@@ -409,6 +418,7 @@ public:
     For(Statement *init, Expression *expr, Statement *incr, Statement *stmt);
     virtual void write(ostream &ostr) const;
     virtual void allocate(int &offset) const;
+    virtual void generate();
 };
 
 
@@ -422,6 +432,7 @@ public:
     If(Expression *expr, Statement *thenStmt, Statement *elseStmt);
     virtual void write(ostream &ostr) const;
     virtual void allocate(int &offset) const;
+    virtual void generate();
 };
 
 
