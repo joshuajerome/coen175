@@ -398,8 +398,12 @@ void Assignment::generate()
     {
         load(_right);
 
-        cout << "\tmovl\t" << _right << ", " << _left << endl;
+	if (_left->type().size() == 1)
+		cout << "\tmovb\t" << _right << ", " << _left << endl;
+	else
+        	cout << "\tmovl\t" << _right << ", " << _left << endl;
 
+	
         assign(_right, nullptr);
         assign(_left, nullptr);
     }
